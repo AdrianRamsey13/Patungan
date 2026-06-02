@@ -1,0 +1,7 @@
+{
+  "permissions": {
+    "allow": [
+      "PowerShell(& \"C:\\\\xampp\\\\mysql\\\\bin\\\\mysql.exe\" -u root patungan -e \"SHOW TABLES;\" 2>&1)"
+    ]
+  }
+}

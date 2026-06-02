@@ -22,6 +22,7 @@ class User extends Authenticatable
         'name',
         'email',
         'password',
+        'avatar',
     ];
 
     /**
@@ -45,5 +46,60 @@ class User extends Authenticatable
             'email_verified_at' => 'datetime',
             'password' => 'hashed',
         ];
+    }
+
+    // Events yang dibuat user ini
+    public function createdEvents(): \Illuminate\Database\Eloquent\Relations\HasMany
+    {
+        return $this->hasMany(Event::class, 'created_by');
+    }
+
+    // Events yang diikuti user (sebagai anggota)
+    public function events(): \Illuminate\Database\Eloquent\Relations\BelongsToMany
+    {
+        return $this->belongsToMany(Event::class, 'event_members')
+                    ->withPivot('joined_at')
+                    ->withTimestamps();
+    }
+
+    // Expense yang dibayarkan user (nalangin)
+    public function expenses(): \Illuminate\Database\Eloquent\Relations\HasMany
+    {
+        return $this->hasMany(Expense::class, 'paid_by');
+    }
+
+    // Tagihan/split yang menjadi tanggungan user
+    public function expenseSplits(): \Illuminate\Database\Eloquent\Relations\HasMany
+    {
+        return $this->hasMany(ExpenseSplit::class);
+    }
+
+    // Pertemanan yang dikirim user ini
+    public function sentFriendships(): \Illuminate\Database\Eloquent\Relations\HasMany
+    {
+        return $this->hasMany(Friendship::class, 'user_id');
+    }
+
+    // Pertemanan yang diterima user ini
+    public function receivedFriendships(): \Illuminate\Database\Eloquent\Relations\HasMany
+    {
+        return $this->hasMany(Friendship::class, 'friend_id');
+    }
+
+    // Daftar teman yang sudah accepted (gabungan sent + received)
+    public function friends(): \Illuminate\Database\Eloquent\Relations\BelongsToMany
+    {
+        return $this->belongsToMany(User::class, 'friendships', 'user_id', 'friend_id')
+                    ->wherePivot('status', 'accepted');
+    }
+
+    // Inisial nama untuk avatar (maks 2 huruf)
+    public function initials(): string
+    {
+        $words = explode(' ', trim($this->name));
+        if (count($words) >= 2) {
+            return strtoupper(substr($words[0], 0, 1) . substr($words[1], 0, 1));
+        }
+        return strtoupper(substr($this->name, 0, 2));
     }
 }

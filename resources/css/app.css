@@ -1,3 +1,74 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+@layer base {
+    body {
+        background-color: #FFF7EF; /* cream */
+        color: #241D16; /* ink */
+        font-family: "Plus Jakarta Sans", system-ui, sans-serif;
+        -webkit-font-smoothing: antialiased;
+    }
+    ::selection {
+        background-color: #FFE7DF; /* coral-soft */
+    }
+}
+
+@layer components {
+    /* Angka & nominal — pakai Baloo 2 */
+    .pt-num {
+        font-family: "Baloo 2", cursive;
+        font-feature-settings: "tnum" 1;
+        letter-spacing: -0.01em;
+    }
+
+    /* Button base */
+    .pt-btn {
+        @apply inline-flex items-center gap-2 font-bold cursor-pointer border-none whitespace-nowrap;
+        transition: transform 0.14s cubic-bezier(.2,.7,.3,1), box-shadow 0.14s, background 0.14s, filter 0.14s;
+    }
+    .pt-btn:active {
+        transform: translateY(1px) scale(0.99);
+    }
+
+    /* Primary button — coral */
+    .pt-btn-primary {
+        @apply bg-coral text-white;
+        box-shadow: 0 6px 16px rgba(255,107,74,.34);
+    }
+    .pt-btn-primary:hover {
+        filter: brightness(1.04);
+        box-shadow: 0 8px 22px rgba(255,107,74,.42);
+    }
+
+    /* Ghost button */
+    .pt-btn-ghost {
+        @apply bg-cream text-ink;
+        box-shadow: inset 0 0 0 1.5px #EADFCF;
+    }
+    .pt-btn-ghost:hover {
+        @apply bg-white;
+    }
+
+    /* Card hover lift */
+    .pt-lift {
+        transition: transform 0.16s cubic-bezier(.2,.7,.3,1), box-shadow 0.16s;
+    }
+    .pt-lift:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 10px 24px rgba(36,29,22,.10), 0 30px 60px rgba(36,29,22,.16);
+    }
+
+    /* Input field */
+    .pt-input {
+        @apply w-full px-4 py-3 rounded-md bg-white text-ink font-semibold text-sm outline-none border-0;
+        box-shadow: inset 0 0 0 1.5px #EADFCF;
+        font-family: "Plus Jakarta Sans", system-ui, sans-serif;
+    }
+    .pt-input:focus {
+        box-shadow: inset 0 0 0 2px #FF6B4A;
+    }
+    .pt-input::placeholder {
+        color: #A39A8F;
+    }
+}
