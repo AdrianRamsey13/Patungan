@@ -40,7 +40,7 @@
                 <path d="M15 5l-7 7 7 7"/>
             </svg>
         </a>
-        <span class="font-extrabold text-ink" style="font-size:16px">Buat Event Patungan</span>
+        <span class="font-extrabold text-ink" style="font-size:16px">Buat Event Baru</span>
         <div class="w-10"></div>
     </div>
 

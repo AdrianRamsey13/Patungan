@@ -15,7 +15,7 @@
                 Halo, {{ explode(' ', Auth::user()->name)[0] }} 👋
             </h1>
             <p class="text-ink-soft text-sm font-medium mt-1">
-                Kamu ikut <b class="text-ink">{{ $events->count() }} event</b> patungan yang masih aktif.
+                Kamu ikut <b class="text-ink">{{ $events->count() }} event</b> split bill yang masih aktif.
             </p>
         </div>
         <a href="{{ route('events.create') }}"
@@ -37,7 +37,7 @@
         {{-- Kiri: Event list --}}
         <section>
             <div class="flex items-center justify-between mb-4">
-                <h2 class="font-extrabold text-ink" style="font-size:16.5px;letter-spacing:-.01em">Event Patungan</h2>
+                <h2 class="font-extrabold text-ink" style="font-size:16.5px;letter-spacing:-.01em">Event Split Bill</h2>
 
                 {{-- Tab filter --}}
                 <div class="flex gap-1 bg-white p-1 rounded-pill" style="box-shadow:0 1px 2px rgba(36,29,22,.05),0 4px 12px rgba(36,29,22,.05)">

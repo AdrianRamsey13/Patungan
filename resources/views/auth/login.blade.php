@@ -1,47 +1,84 @@
 <x-guest-layout>
-    <!-- Session Status -->
-    <x-auth-session-status class="mb-4" :status="session('status')" />
 
-    <form method="POST" action="{{ route('login') }}">
+    {{-- Heading --}}
+    <div class="mb-8">
+        <h1 class="pt-num font-extrabold text-ink mb-1" style="font-size:1.9rem;letter-spacing:-.03em">
+            Selamat datang! 👋
+        </h1>
+        <p class="text-ink-soft font-medium text-sm">
+            Masuk ke akun FunBill kamu.
+        </p>
+    </div>
+
+    {{-- Session status --}}
+    @if (session('status'))
+        <div class="mb-5 px-4 py-3 rounded-xl bg-mint-soft text-mint-ink font-semibold text-sm">
+            {{ session('status') }}
+        </div>
+    @endif
+
+    <form method="POST" action="{{ route('login') }}" class="flex flex-col gap-4">
         @csrf
 
-        <!-- Email Address -->
+        {{-- Email --}}
         <div>
-            <x-input-label for="email" :value="__('Email')" />
-            <x-text-input id="email" class="block mt-1 w-full" type="email" name="email" :value="old('email')" required autofocus autocomplete="username" />
-            <x-input-error :messages="$errors->get('email')" class="mt-2" />
-        </div>
-
-        <!-- Password -->
-        <div class="mt-4">
-            <x-input-label for="password" :value="__('Password')" />
-
-            <x-text-input id="password" class="block mt-1 w-full"
-                            type="password"
-                            name="password"
-                            required autocomplete="current-password" />
-
-            <x-input-error :messages="$errors->get('password')" class="mt-2" />
-        </div>
-
-        <!-- Remember Me -->
-        <div class="block mt-4">
-            <label for="remember_me" class="inline-flex items-center">
-                <input id="remember_me" type="checkbox" class="rounded border-gray-300 text-indigo-600 shadow-sm focus:ring-indigo-500" name="remember">
-                <span class="ms-2 text-sm text-gray-600">{{ __('Remember me') }}</span>
+            <label for="email" class="block text-xs font-extrabold text-ink mb-2">
+                Email
             </label>
+            <input id="email" type="email" name="email"
+                   value="{{ old('email') }}"
+                   class="pt-input @error('email') ring-2 ring-red-400 @enderror"
+                   placeholder="nama@email.com"
+                   required autofocus autocomplete="username">
+            @error('email')
+                <p class="mt-1.5 text-red-500 text-xs font-semibold">{{ $message }}</p>
+            @enderror
         </div>
 
-        <div class="flex items-center justify-end mt-4">
-            @if (Route::has('password.request'))
-                <a class="underline text-sm text-gray-600 hover:text-gray-900 rounded-md focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500" href="{{ route('password.request') }}">
-                    {{ __('Forgot your password?') }}
-                </a>
-            @endif
-
-            <x-primary-button class="ms-3">
-                {{ __('Log in') }}
-            </x-primary-button>
+        {{-- Password --}}
+        <div>
+            <div class="flex items-center justify-between mb-2">
+                <label for="password" class="text-xs font-extrabold text-ink">Password</label>
+                @if (Route::has('password.request'))
+                    <a href="{{ route('password.request') }}"
+                       class="text-xs font-bold text-coral hover:underline">
+                        Lupa password?
+                    </a>
+                @endif
+            </div>
+            <input id="password" type="password" name="password"
+                   class="pt-input @error('password') ring-2 ring-red-400 @enderror"
+                   placeholder="••••••••"
+                   required autocomplete="current-password">
+            @error('password')
+                <p class="mt-1.5 text-red-500 text-xs font-semibold">{{ $message }}</p>
+            @enderror
         </div>
+
+        {{-- Remember me --}}
+        <label class="flex items-center gap-2.5 cursor-pointer select-none">
+            <input type="checkbox" name="remember"
+                   class="w-4 h-4 rounded border-line text-coral focus:ring-coral focus:ring-offset-0">
+            <span class="text-sm font-semibold text-ink-soft">Ingat saya</span>
+        </label>
+
+        {{-- Submit --}}
+        <button type="submit"
+                class="pt-btn pt-btn-primary w-full justify-center rounded-[14px] py-4 text-base font-bold mt-1">
+            Masuk
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M5 12h14M12 5l7 7-7 7"/>
+            </svg>
+        </button>
     </form>
+
+    {{-- Divider + register link --}}
+    <div class="mt-6 text-center">
+        <span class="text-ink-soft text-sm font-medium">Belum punya akun?</span>
+        <a href="{{ route('register') }}"
+           class="ml-1.5 text-sm font-bold text-coral hover:underline">
+            Daftar gratis
+        </a>
+    </div>
+
 </x-guest-layout>

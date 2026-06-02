@@ -14,5 +14,5 @@
             <path d="M12 12V3M12 12l7 5.5" stroke="white" stroke-width="2.4" stroke-linecap="round"/>
         </svg>
     </div>
-    <span class="pt-num font-extrabold text-ink {{ $text }}" style="letter-spacing:-.01em">Patungan</span>
+    <span class="pt-num font-extrabold text-ink {{ $text }}" style="letter-spacing:-.01em">FunBill</span>
 </div>

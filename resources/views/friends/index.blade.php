@@ -1,7 +1,7 @@
 <x-app-layout>
 <div class="px-6 md:px-8 py-6 max-w-[800px]">
     <h1 class="font-extrabold text-ink text-2xl mb-2" style="letter-spacing:-.02em">Teman</h1>
-    <p class="text-ink-soft text-sm font-medium mb-8">Kelola daftar teman untuk diajak patungan bareng.</p>
+    <p class="text-ink-soft text-sm font-medium mb-8">Kelola daftar teman untuk diajak split bill bareng.</p>
 
     <div class="bg-white rounded-[22px] px-6 py-14 text-center"
          style="box-shadow:0 2px 5px rgba(36,29,22,.04),0 14px 30px rgba(36,29,22,.07)">

@@ -47,7 +47,7 @@
     <div class="mt-5 bg-cream rounded-[18px] p-4">
         <div class="font-extrabold text-ink text-sm">Ajak teman 🎈</div>
         <p class="mt-1 mb-3 text-ink-soft leading-relaxed font-medium" style="font-size:11.5px">
-            Patungan makin gampang kalau rame.
+            FunBill makin seru kalau rame.
         </p>
         <button class="pt-btn pt-btn-ghost w-full justify-center rounded-[11px] text-xs font-bold"
                 style="padding:9px">
