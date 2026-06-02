@@ -2,6 +2,7 @@
     $navItems = [
         ['route' => 'dashboard',    'activePattern' => 'dashboard',  'icon' => 'home',    'label' => 'Beranda'],
         ['route' => 'events.create','activePattern' => 'events.*',   'icon' => 'receipt', 'label' => 'Event'],
+        ['route' => 'notes.index',  'activePattern' => 'notes.*',    'icon' => 'notes',   'label' => 'Notes'],
         ['route' => 'friends.index','activePattern' => 'friends.*',  'icon' => 'users',   'label' => 'Teman'],
         ['route' => 'bills.index',  'activePattern' => 'bills.*',    'icon' => 'wallet',  'label' => 'Tagihan'],
         ['route' => 'profile.edit', 'activePattern' => 'profile.*',  'icon' => 'user',    'label' => 'Profil'],
@@ -10,6 +11,7 @@
     $icons = [
         'home'    => '<path d="M3.5 11L12 4l8.5 7"/><path d="M5.5 9.7V20h13V9.7"/>',
         'receipt' => '<path d="M5 3.5h14V21l-2.3-1.5L14.4 21 12 19.5 9.6 21 7.3 19.5 5 21V3.5z"/><path d="M9 8h6M9 12h6"/>',
+        'notes'   => '<path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/>',
         'users'   => '<circle cx="9" cy="8" r="3.2"/><path d="M3.5 19a5.5 5.5 0 0 1 11 0"/><path d="M16 5.2a3.2 3.2 0 0 1 0 6M17.5 19a5.5 5.5 0 0 0-3-4.9"/>',
         'wallet'  => '<path d="M3 7h15a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V7z"/><path d="M3 7l2.5-3.5a1 1 0 0 1 .9-.5H16"/><circle cx="16.5" cy="13" r="1.3" fill="currentColor" stroke="none"/>',
         'user'    => '<circle cx="12" cy="8" r="4"/><path d="M4 20a8 8 0 0 1 16 0"/>',
