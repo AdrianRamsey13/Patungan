@@ -2,19 +2,26 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\ExpenseSplit;
+use App\Models\Event;
+use App\Models\User;
+use App\Services\ExpenseSplitService;
 use Illuminate\Http\Request;
 
 class ExpenseSplitController extends Controller
 {
-    // Tandai lunas — hanya bisa dilakukan oleh user yang bersangkutan
-    public function markPaid(Request $request, ExpenseSplit $expenseSplit)
+    public function __construct(private ExpenseSplitService $splits) {}
+
+    // Debtor tandai lunas ke satu creditor spesifik dalam event
+    public function markPaid(Request $request, Event $event, User $creditor)
     {
-        abort_if($expenseSplit->user_id !== $request->user()->id, 403);
-        abort_if($expenseSplit->is_paid, 422, 'Sudah lunas.');
+        $this->authorize('view', $event);
 
-        $expenseSplit->markAsPaid();
+        $debtorId = (int) auth()->id();
 
-        return back()->with('success', 'Pembayaran dikonfirmasi!');
+        abort_if($debtorId === $creditor->id, 422, 'Tidak bisa bayar ke diri sendiri.');
+
+        $this->splits->markAllPaid($event, $debtorId, $creditor->id);
+
+        return back()->with('success', "Pembayaran ke {$creditor->name} dikonfirmasi!");
     }
 }

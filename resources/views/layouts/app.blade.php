@@ -91,5 +91,77 @@
 
     </div>{{-- end flex wrapper --}}
 
+    {{-- ── GLOBAL CONFIRMATION DIALOG ─────────────────────── --}}
+    <div x-data
+         x-show="$store.dialog.open"
+         @keydown.escape.window="$store.dialog.cancel()"
+         class="fixed inset-0 z-50 flex items-center justify-center p-4"
+         style="display:none">
+
+        {{-- Backdrop --}}
+        <div class="absolute inset-0 bg-ink/40 backdrop-blur-[3px]"
+             x-transition:enter="transition-opacity duration-200"
+             x-transition:enter-start="opacity-0"
+             x-transition:enter-end="opacity-100"
+             x-transition:leave="transition-opacity duration-200"
+             x-transition:leave-start="opacity-100"
+             x-transition:leave-end="opacity-0"
+             @click="$store.dialog.cancel()">
+        </div>
+
+        {{-- Modal card --}}
+        <div class="relative w-full max-w-sm bg-white rounded-[24px] p-6 dialog-enter"
+             style="box-shadow:0 20px 48px rgba(36,29,22,.18),0 4px 12px rgba(36,29,22,.08)">
+
+            {{-- Icon --}}
+            <div class="w-12 h-12 rounded-[16px] flex items-center justify-center mx-auto mb-4"
+                 :class="$store.dialog.isDanger ? 'bg-red-50' : 'bg-coral-soft'">
+                <template x-if="$store.dialog.isDanger">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#EF4444"
+                         stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                        <polyline points="3 6 5 6 21 6"/>
+                        <path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/>
+                        <path d="M10 11v6M14 11v6"/>
+                        <path d="M9 6V4h6v2"/>
+                    </svg>
+                </template>
+                <template x-if="!$store.dialog.isDanger">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#FF6B4A"
+                         stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                        <circle cx="12" cy="12" r="10"/>
+                        <line x1="12" y1="8" x2="12" y2="12"/>
+                        <line x1="12" y1="16" x2="12.01" y2="16"/>
+                    </svg>
+                </template>
+            </div>
+
+            {{-- Title --}}
+            <h3 class="pt-num font-extrabold text-ink text-center mb-2"
+                style="font-size:1.2rem;letter-spacing:-.02em"
+                x-text="$store.dialog.title">
+            </h3>
+
+            {{-- Message --}}
+            <p class="text-ink-soft text-sm font-medium text-center leading-relaxed mb-6"
+               x-text="$store.dialog.message">
+            </p>
+
+            {{-- Buttons --}}
+            <div class="flex gap-3">
+                <button @click="$store.dialog.cancel()"
+                        class="pt-btn pt-btn-ghost flex-1 justify-center rounded-[14px] py-3 text-sm font-bold"
+                        x-text="$store.dialog.cancelText">
+                </button>
+                <button @click="$store.dialog.confirm()"
+                        class="flex-1 justify-center rounded-[14px] py-3 text-sm font-bold inline-flex items-center gap-2 transition-all"
+                        :class="$store.dialog.isDanger
+                            ? 'bg-red-500 text-white hover:bg-red-600 shadow-[0_6px_16px_rgba(239,68,68,.35)]'
+                            : 'pt-btn-primary bg-coral text-white'"
+                        x-text="$store.dialog.confirmText">
+                </button>
+            </div>
+        </div>
+    </div>
+
 </body>
 </html>

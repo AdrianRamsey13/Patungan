@@ -11,6 +11,7 @@ class ExpenseSplit extends Model
         'expense_id',
         'user_id',
         'amount_owed',
+        'amount_paid',
         'is_paid',
         'paid_at',
     ];
@@ -18,8 +19,8 @@ class ExpenseSplit extends Model
     protected function casts(): array
     {
         return [
-            'is_paid' => 'boolean',
-            'paid_at' => 'datetime',
+            'is_paid'  => 'boolean',
+            'paid_at'  => 'datetime',
         ];
     }
 
@@ -33,12 +34,19 @@ class ExpenseSplit extends Model
         return $this->belongsTo(User::class);
     }
 
-    // Tandai lunas
+    // Sisa yang belum dibayar
+    public function remaining(): int
+    {
+        return max(0, $this->amount_owed - $this->amount_paid);
+    }
+
+    // Tandai lunas — set amount_paid = amount_owed
     public function markAsPaid(): bool
     {
         return $this->update([
-            'is_paid' => true,
-            'paid_at' => now(),
+            'amount_paid' => $this->amount_owed,
+            'is_paid'     => true,
+            'paid_at'     => now(),
         ]);
     }
 }

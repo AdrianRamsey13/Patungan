@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Services\ExpenseSplitService;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
@@ -20,7 +21,6 @@ class Expense extends Model
         return $this->belongsTo(Event::class);
     }
 
-    // User yang nalangin / bayar duluan
     public function payer(): BelongsTo
     {
         return $this->belongsTo(User::class, 'paid_by');
@@ -31,26 +31,17 @@ class Expense extends Model
         return $this->hasMany(ExpenseSplit::class);
     }
 
-    // Bagian per orang dari expense ini
+    // Bagian per orang rata-rata
     public function sharePerPerson(): int
     {
         $count = $this->splits()->count();
         return $count > 0 ? (int) round($this->amount / $count) : $this->amount;
     }
 
-    // Auto-buat split rata untuk semua member event
+    // Buat splits rata menggunakan service
     public function createEvenSplits(): void
     {
         $memberIds = $this->event->members()->pluck('users.id');
-        $share = (int) round($this->amount / $memberIds->count());
-
-        foreach ($memberIds as $userId) {
-            ExpenseSplit::create([
-                'expense_id'  => $this->id,
-                'user_id'     => $userId,
-                'amount_owed' => $share,
-                'is_paid'     => $userId === $this->paid_by, // payer dianggap sudah bayar
-            ]);
-        }
+        app(ExpenseSplitService::class)->createSplits($this, $memberIds);
     }
 }

@@ -3,47 +3,44 @@
 namespace App\Http\Controllers;
 
 use App\Models\Event;
+use App\Services\ExpenseSplitService;
 use Illuminate\Http\Request;
 
 class ExpenseController extends Controller
 {
+    public function __construct(private ExpenseSplitService $splits) {}
+
     public function create(Event $event)
     {
         $this->authorize('view', $event);
+        abort_if($event->status === 'closed', 403, 'Event sudah ditutup.');
         return view('expenses.create', compact('event'));
     }
 
     public function store(Request $request, Event $event)
     {
         $this->authorize('view', $event);
+        abort_if($event->status === 'closed', 403, 'Event sudah ditutup.');
 
         $data = $request->validate([
+            'description' => ['required', 'string', 'max:255'],
             'amount'      => ['required', 'integer', 'min:1'],
-            'description' => ['nullable', 'string', 'max:255'],
-            'splits'      => ['nullable', 'array'],   // optional custom split: [user_id => amount]
-            'splits.*'    => ['integer', 'min:0'],
         ]);
 
-        $expense = $event->expenses()->create([
-            'paid_by'     => auth()->id(),
-            'amount'      => $data['amount'],
-            'description' => $data['description'] ?? null,
-        ]);
+        $expense = \Illuminate\Support\Facades\DB::transaction(function () use ($data, $event) {
+            $expense = $event->expenses()->create([
+                'paid_by'     => auth()->id(),
+                'amount'      => $data['amount'],
+                'description' => $data['description'],
+            ]);
 
-        if (!empty($data['splits'])) {
-            // Custom split
-            foreach ($data['splits'] as $userId => $amount) {
-                $expense->splits()->create([
-                    'user_id'     => $userId,
-                    'amount_owed' => $amount,
-                    'is_paid'     => (int) $userId === auth()->id(),
-                ]);
-            }
-        } else {
-            // Split rata
-            $expense->createEvenSplits();
-        }
+            $memberIds = $event->members()->pluck('users.id');
+            $this->splits->createSplits($expense, $memberIds);
 
-        return redirect()->route('events.show', $event)->with('success', 'Pengeluaran ditambahkan.');
+            return $expense;
+        });
+
+        return redirect()->route('events.show', $event)
+            ->with('success', "Pengeluaran \"{$expense->description}\" berhasil ditambahkan.");
     }
 }
