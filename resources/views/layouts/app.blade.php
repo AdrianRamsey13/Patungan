@@ -73,6 +73,13 @@
                     <span class="absolute top-2 right-2 w-1.5 h-1.5 rounded-full bg-coral"
                           style="box-shadow:0 0 0 2px #fff"></span>
                 </button>
+
+                {{-- Profile avatar --}}
+                <a href="{{ route('profile.edit') }}"
+                   class="flex-shrink-0 rounded-full ring-2 transition-all
+                          {{ request()->routeIs('profile.*') ? 'ring-coral' : 'ring-transparent hover:ring-line' }}">
+                    <x-pt.avatar :name="Auth::user()->name" size="sm" />
+                </a>
             </header>
 
             {{-- Page content --}}
