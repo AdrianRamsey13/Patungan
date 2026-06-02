@@ -1,5 +1,5 @@
 <x-app-layout>
-<div class="px-7 py-6 max-w-[1200px] mx-auto">
+<div class="px-6 md:px-8 py-6 max-w-[1100px]">
 
     {{-- Flash message --}}
     @if (session('success'))
