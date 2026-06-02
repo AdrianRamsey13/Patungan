@@ -1,0 +1,175 @@
+<x-app-layout>
+<div class="max-w-xl mx-auto px-4 py-6"
+
+     {{-- Alpine: semua state form dalam satu komponen --}}
+     x-data="{
+         name: '',
+         total: '',
+         cat: 'jalan',
+         selectedIds: [],
+         totalNum() { return parseInt(this.total.replace(/\D/g, '') || '0', 10); },
+         memberCount() { return this.selectedIds.length + 1; },  // +1 = kamu sendiri
+         sharePerPerson() {
+             return this.memberCount() > 0 && this.totalNum() > 0
+                 ? Math.round(this.totalNum() / this.memberCount())
+                 : 0;
+         },
+         toggleMember(id) {
+             if (this.selectedIds.includes(id)) {
+                 this.selectedIds = this.selectedIds.filter(i => i !== id);
+             } else {
+                 this.selectedIds.push(id);
+             }
+         },
+         formatRp(n) {
+             return n > 0 ? 'Rp ' + n.toLocaleString('id-ID') : 'Rp 0';
+         },
+         formatInput() {
+             const digits = this.total.replace(/\D/g, '');
+             this.total = digits ? parseInt(digits, 10).toLocaleString('id-ID') : '';
+         },
+         canSubmit() { return this.name.trim().length > 0 && this.totalNum() > 0; }
+     }">
+
+    {{-- Top bar --}}
+    <div class="flex items-center justify-between mb-6">
+        <a href="{{ route('dashboard') }}"
+           class="w-10 h-10 rounded-xl bg-white flex items-center justify-center text-ink hover:bg-cream transition-colors"
+           style="box-shadow:0 1px 2px rgba(36,29,22,.05),0 4px 12px rgba(36,29,22,.05)">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M15 5l-7 7 7 7"/>
+            </svg>
+        </a>
+        <span class="font-extrabold text-ink" style="font-size:16px">Buat Event Patungan</span>
+        <div class="w-10"></div>
+    </div>
+
+    <form method="POST" action="{{ route('events.store') }}">
+        @csrf
+
+        {{-- Card form utama --}}
+        <div class="bg-white rounded-[22px] p-6 flex flex-col gap-5"
+             style="box-shadow:0 2px 5px rgba(36,29,22,.04),0 14px 30px rgba(36,29,22,.07)">
+
+            {{-- Nama event --}}
+            <div>
+                <label class="block text-xs font-extrabold text-ink mb-2">Nama event</label>
+                <input type="text" name="name" x-model="name"
+                       class="pt-input" placeholder="cth. Liburan ke Bali"
+                       value="{{ old('name') }}" required>
+                @error('name') <p class="text-red-500 text-xs mt-1">{{ $message }}</p> @enderror
+            </div>
+
+            {{-- Kategori --}}
+            <div>
+                <label class="block text-xs font-extrabold text-ink mb-2">Kategori</label>
+                <div class="flex gap-2 flex-wrap">
+                    @php
+                        $cats = [
+                            ['key' => 'jalan',    'label' => 'Jalan',    'cat' => 'travel', 'accent' => 'sky',   'soft' => '#DDF0FD', 'ink' => '#1184D6', 'solid' => '#2BA8F4'],
+                            ['key' => 'konsumsi', 'label' => 'Konsumsi', 'cat' => 'coffee', 'accent' => 'amber', 'soft' => '#FCEFD2', 'ink' => '#C77C05', 'solid' => '#F59E0B'],
+                            ['key' => 'acara',    'label' => 'Acara',    'cat' => 'ball',   'accent' => 'coral', 'soft' => '#FFE7DF', 'ink' => '#E5512F', 'solid' => '#FF6B4A'],
+                            ['key' => 'sewa',     'label' => 'Sewa',     'cat' => 'home',   'accent' => 'grape', 'soft' => '#ECE7FF', 'ink' => '#5E43E8', 'solid' => '#7B61FF'],
+                            ['key' => 'kado',     'label' => 'Kado',     'cat' => 'gift',   'accent' => 'mint',  'soft' => '#DDF6EC', 'ink' => '#0B8A65', 'solid' => '#12B886'],
+                        ];
+                    @endphp
+                    @foreach ($cats as $c)
+                        <button type="button" @click="cat = '{{ $c['key'] }}'"
+                                class="flex flex-col items-center gap-1 px-3 py-2.5 rounded-[14px] min-w-[64px] font-bold transition-all"
+                                style="font-size:11.5px"
+                                :style="cat === '{{ $c['key'] }}'
+                                    ? 'background:{{ $c['soft'] }};color:{{ $c['ink'] }};box-shadow:inset 0 0 0 2px {{ $c['solid'] }}'
+                                    : 'background:#FFF7EF;color:#6B6157;box-shadow:inset 0 0 0 1.5px #EADFCF'">
+                            <x-pt.cat-icon :cat="$c['cat']" :accent="$c['accent']" :size="24" />
+                            {{ $c['label'] }}
+                        </button>
+                        <input type="radio" name="category" value="{{ $c['key'] }}" class="hidden"
+                               x-bind:checked="cat === '{{ $c['key'] }}'">
+                    @endforeach
+                </div>
+                @error('category') <p class="text-red-500 text-xs mt-1">{{ $message }}</p> @enderror
+            </div>
+
+            {{-- Total biaya --}}
+            <div>
+                <label class="block text-xs font-extrabold text-ink mb-2">Total biaya</label>
+                <div class="relative">
+                    <span class="absolute left-4 top-1/2 -translate-y-1/2 font-extrabold text-muted text-sm">Rp</span>
+                    <input type="text" x-model="total" @input="formatInput()" @keydown.enter.prevent
+                           inputmode="numeric" placeholder="0"
+                           class="pt-input pl-11 pt-num font-bold text-lg">
+                    {{-- Hidden input dengan nilai bersih untuk POST --}}
+                    <input type="hidden" name="amount" :value="totalNum()">
+                </div>
+                @error('amount') <p class="text-red-500 text-xs mt-1">{{ $message }}</p> @enderror
+            </div>
+
+            {{-- Tanggal (opsional) --}}
+            <div class="grid grid-cols-2 gap-3">
+                <div>
+                    <label class="block text-xs font-extrabold text-ink mb-2">Tanggal mulai <span class="font-normal text-muted">(opsional)</span></label>
+                    <input type="date" name="date_start" value="{{ old('date_start') }}" class="pt-input text-sm">
+                </div>
+                <div>
+                    <label class="block text-xs font-extrabold text-ink mb-2">Tanggal selesai <span class="font-normal text-muted">(opsional)</span></label>
+                    <input type="date" name="date_end" value="{{ old('date_end') }}" class="pt-input text-sm">
+                </div>
+            </div>
+
+            {{-- Peserta --}}
+            <div>
+                <label class="block text-xs font-extrabold text-ink mb-2">
+                    Peserta · <span x-text="memberCount()"></span> orang
+                </label>
+                <div class="flex flex-wrap gap-2">
+                    {{-- Kamu sendiri (selalu ikut, tidak bisa di-uncheck) --}}
+                    <span class="inline-flex items-center gap-2 px-3 py-1.5 rounded-pill font-bold text-sm bg-coral text-white">
+                        <x-pt.avatar :name="Auth::user()->name" size="xs" />
+                        Kamu
+                    </span>
+
+                    @foreach ($friends as $friend)
+                        <button type="button" @click="toggleMember({{ $friend->id }})"
+                                class="inline-flex items-center gap-2 px-3 py-1.5 rounded-pill font-bold text-sm transition-colors"
+                                :style="selectedIds.includes({{ $friend->id }})
+                                    ? 'background:#241D16;color:#fff'
+                                    : 'background:#FFF7EF;color:#6B6157;box-shadow:inset 0 0 0 1.5px #EADFCF'">
+                            <x-pt.avatar :name="$friend->name" size="xs" />
+                            {{ explode(' ', $friend->name)[0] }}
+                        </button>
+                        {{-- Hidden checkbox dikirim jika selected --}}
+                        <input type="checkbox" name="members[]" value="{{ $friend->id }}"
+                               class="hidden" x-bind:checked="selectedIds.includes({{ $friend->id }})">
+                    @endforeach
+
+                    @if ($friends->isEmpty())
+                        <span class="text-muted text-sm font-semibold italic">
+                            Belum ada teman. <a href="#" class="text-coral not-italic hover:underline">Tambah teman dulu →</a>
+                        </span>
+                    @endif
+                </div>
+                @error('members') <p class="text-red-500 text-xs mt-1">{{ $message }}</p> @enderror
+            </div>
+
+        </div>{{-- end card --}}
+
+        {{-- Sticky footer: live preview + submit --}}
+        <div class="mt-4 bg-white rounded-[18px] px-5 py-4"
+             style="box-shadow:0 -4px 16px rgba(36,29,22,.06),0 2px 8px rgba(36,29,22,.04)">
+            <div class="flex items-center justify-between mb-3">
+                <span class="text-ink-soft text-sm font-bold">
+                    Dibagi rata · <span x-text="memberCount()"></span> orang
+                </span>
+                <span class="pt-num font-extrabold text-xl text-coral" x-text="formatRp(sharePerPerson())"></span>
+            </div>
+            <button type="submit" :disabled="!canSubmit()"
+                    class="pt-btn pt-btn-primary w-full justify-center rounded-[14px] py-4 text-base font-bold"
+                    :class="!canSubmit() ? 'opacity-50 cursor-not-allowed' : ''">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>
+                Buat Event
+            </button>
+        </div>
+
+    </form>
+</div>
+</x-app-layout>

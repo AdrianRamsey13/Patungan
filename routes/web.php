@@ -7,8 +7,12 @@ use App\Http\Controllers\ExpenseSplitController;
 use App\Http\Controllers\ProfileController;
 use Illuminate\Support\Facades\Route;
 
-// Redirect root ke dashboard (atau login jika belum auth)
-Route::get('/', fn() => redirect()->route('dashboard'));
+// Landing page — kalau sudah login, langsung ke dashboard
+Route::get('/', function () {
+    return auth()->check()
+        ? redirect()->route('dashboard')
+        : view('landing');
+})->name('landing');
 
 Route::middleware(['auth', 'verified'])->group(function () {
 
