@@ -5,6 +5,34 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
+/**
+ * @property int $id
+ * @property int $expense_id
+ * @property int|null $user_id
+ * @property string|null $guest_name
+ * @property int $amount_owed
+ * @property int $amount_paid
+ * @property bool $is_paid
+ * @property \Illuminate\Support\Carbon|null $paid_at
+ * @property \Illuminate\Support\Carbon|null $created_at
+ * @property \Illuminate\Support\Carbon|null $updated_at
+ * @property-read \App\Models\Expense $expense
+ * @property-read \App\Models\User|null $user
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|ExpenseSplit newModelQuery()
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|ExpenseSplit newQuery()
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|ExpenseSplit query()
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|ExpenseSplit whereAmountOwed($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|ExpenseSplit whereAmountPaid($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|ExpenseSplit whereCreatedAt($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|ExpenseSplit whereExpenseId($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|ExpenseSplit whereGuestName($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|ExpenseSplit whereId($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|ExpenseSplit whereIsPaid($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|ExpenseSplit wherePaidAt($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|ExpenseSplit whereUpdatedAt($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|ExpenseSplit whereUserId($value)
+ * @mixin \Eloquent
+ */
 class ExpenseSplit extends Model
 {
     protected $fillable = [

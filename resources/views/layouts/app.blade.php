@@ -33,10 +33,13 @@
         </div>
 
         {{-- ── SIDEBAR ────────────────────────────────────── --}}
-        <aside class="fixed inset-y-0 left-0 z-30 w-[220px] bg-white border-r border-line
-                      transform transition-transform duration-200 ease-in-out
-                      lg:sticky lg:top-0 lg:h-screen lg:flex-shrink-0 lg:translate-x-0"
-               :class="open ? 'translate-x-0 shadow-pop' : '-translate-x-full lg:translate-x-0'">
+        {{-- -translate-x-full ada di static class supaya sidebar mulai hidden sebelum Alpine init
+             transition sengaja di-delay via x-init supaya tidak ada slide animation saat page load --}}
+        <aside class="-translate-x-full lg:translate-x-0
+                      fixed inset-y-0 left-0 z-30 w-[220px] bg-white border-r border-line
+                      lg:sticky lg:top-0 lg:h-screen lg:flex-shrink-0"
+               x-init="$nextTick(() => $el.classList.add('transition-transform', 'duration-200', 'ease-in-out'))"
+               :class="open ? '!translate-x-0 shadow-pop' : ''">
             @include('layouts.sidebar')
         </aside>
 

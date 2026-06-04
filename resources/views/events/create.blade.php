@@ -13,15 +13,16 @@
     </div>
 
     <form method="POST" action="{{ route('events.store') }}"
+          @submit="submitting = true"
           x-data="{
               cat: '{{ old('category', 'jalan') }}',
               selectedIds: {{ json_encode(old('members', [])) }},
+              submitting: false,
               toggleMember(id) {
                   this.selectedIds.includes(id)
                       ? this.selectedIds = this.selectedIds.filter(i => i !== id)
                       : this.selectedIds.push(id);
               },
-              // total semua peserta (kamu + selected users) — guest count di-track terpisah di child x-data
               totalUsers() { return this.selectedIds.length + 1; }
           }">
         @csrf
@@ -199,9 +200,14 @@
                 💡 Pengeluaran bisa ditambahkan setelah event dibuat oleh siapa saja yang ikut.
             </p>
             <button type="submit"
+                    :disabled="submitting"
+                    :class="submitting ? 'opacity-60 cursor-not-allowed' : ''"
                     class="pt-btn pt-btn-primary w-full justify-center rounded-[14px] py-4 text-base font-bold">
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>
-                Buat Event
+                <svg x-show="!submitting" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>
+                <svg x-show="submitting" class="animate-spin" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" style="display:none">
+                    <path d="M21 12a9 9 0 1 1-6.219-8.56"/>
+                </svg>
+                <span x-text="submitting ? 'Membuat event...' : 'Buat Event'"></span>
             </button>
         </div>
 

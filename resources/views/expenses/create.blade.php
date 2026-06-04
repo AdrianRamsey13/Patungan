@@ -31,9 +31,11 @@
     @endphp
 
     <form method="POST" action="{{ route('events.expenses.store', $event) }}"
+          @submit="submitting = true"
           x-data="{
               total: '',
               payerMemberId: {{ $defaultPayerId ?? 'null' }},
+              submitting: false,
               totalNum() { return parseInt(this.total.replace(/\D/g, '') || '0', 10); },
               formatInput() {
                   const d = this.total.replace(/\D/g, '');
@@ -140,11 +142,14 @@
 
         <div class="mt-4">
             <button type="submit"
-                    :disabled="totalNum() <= 0 || !payerMemberId"
+                    :disabled="submitting || totalNum() <= 0 || !payerMemberId"
                     class="pt-btn pt-btn-primary w-full justify-center rounded-[14px] py-4 text-base font-bold"
-                    :class="totalNum() <= 0 || !payerMemberId ? 'opacity-50 cursor-not-allowed' : ''">
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>
-                Tambah Pengeluaran
+                    :class="submitting || totalNum() <= 0 || !payerMemberId ? 'opacity-50 cursor-not-allowed' : ''">
+                <svg x-show="!submitting" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>
+                <svg x-show="submitting" class="animate-spin" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" style="display:none">
+                    <path d="M21 12a9 9 0 1 1-6.219-8.56"/>
+                </svg>
+                <span x-text="submitting ? 'Menyimpan...' : 'Tambah Pengeluaran'"></span>
             </button>
         </div>
     </form>

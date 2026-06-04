@@ -15,8 +15,8 @@ class DashboardController extends Controller
         $tab  = $request->query('tab', 'aktif');
 
         $eventsQuery = $user->events()
-            ->with(['creator', 'members', 'expenses.splits'])
-            ->withCount('members');
+            ->with(['creator', 'eventMembers', 'expenses.splits'])
+            ->withCount('eventMembers');
 
         $events = match ($tab) {
             'selesai' => (clone $eventsQuery)->where('events.status', 'closed')->get(),
@@ -58,7 +58,7 @@ class DashboardController extends Controller
                   ->whereHas('expense', fn($q2) => $q2->where('paid_by', $userId));
             })
             ->orderByDesc('paid_at')
-            ->limit(6)
+            ->limit(20)
             ->get();
     }
 }

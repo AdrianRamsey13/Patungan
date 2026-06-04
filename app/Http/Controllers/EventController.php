@@ -7,6 +7,7 @@ use App\Models\EventMember;
 use App\Models\User;
 use App\Services\ExpenseSplitService;
 use Illuminate\Http\Request;
+use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
 
 class EventController extends Controller

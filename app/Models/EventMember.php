@@ -5,6 +5,28 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
+/**
+ * @property int $id
+ * @property int $event_id
+ * @property int|null $user_id
+ * @property string|null $guest_name
+ * @property \Illuminate\Support\Carbon $joined_at
+ * @property \Illuminate\Support\Carbon|null $created_at
+ * @property \Illuminate\Support\Carbon|null $updated_at
+ * @property-read \App\Models\Event $event
+ * @property-read \App\Models\User|null $user
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|EventMember newModelQuery()
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|EventMember newQuery()
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|EventMember query()
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|EventMember whereCreatedAt($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|EventMember whereEventId($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|EventMember whereGuestName($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|EventMember whereId($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|EventMember whereJoinedAt($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|EventMember whereUpdatedAt($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|EventMember whereUserId($value)
+ * @mixin \Eloquent
+ */
 class EventMember extends Model
 {
     protected $fillable = [
