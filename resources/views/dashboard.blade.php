@@ -4,11 +4,7 @@
          eventPage: 1,
          historyPage: 1,
          eventPerPage: 6,
-         historyPerPage: 10,
-         init() {
-             this.eventPerPage  = window.innerWidth >= 1024 ? 9999 : 6;
-             this.historyPerPage = window.innerWidth >= 1024 ? 9999 : 10;
-         },
+         historyPerPage: window.innerWidth >= 1024 ? 9999 : 10,
          totalEventPages()   { return Math.max(1, Math.ceil({{ $events->count() }} / this.eventPerPage)); },
          totalHistoryPages() { return Math.max(1, Math.ceil({{ $history->count() }} / this.historyPerPage)); },
          showEvent(i)   { return i >= (this.eventPage   - 1) * this.eventPerPage   && i < this.eventPage   * this.eventPerPage; },
@@ -97,8 +93,8 @@
                     @endforeach
                 </div>
 
-                {{-- Pagination events — hanya mobile, hanya kalau > 1 halaman --}}
-                <div class="lg:hidden mt-4 flex items-center justify-between gap-2"
+                {{-- Pagination events --}}
+                <div class="mt-4 flex items-center justify-between gap-2"
                      x-show="totalEventPages() > 1" style="display:none">
                     <button @click="eventPage = Math.max(1, eventPage - 1)"
                             :disabled="eventPage === 1"
@@ -122,10 +118,17 @@
 
         {{-- ── HISTORY SECTION ─────────────────────────── --}}
         <aside class="w-full lg:w-[340px] lg:flex-shrink-0">
-            <h2 class="font-extrabold text-ink mb-4"
-                style="font-size:16.5px;letter-spacing:-.01em">
-                Riwayat Transaksi
-            </h2>
+            <div class="flex items-center justify-between mb-4">
+                <h2 class="font-extrabold text-ink"
+                    style="font-size:16.5px;letter-spacing:-.01em">
+                    Riwayat Transaksi
+                </h2>
+                <a href="{{ route('history.index') }}"
+                   class="text-coral text-sm font-bold hover:underline flex items-center gap-1">
+                    Lihat semua
+                    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M9 6l6 6-6 6"/></svg>
+                </a>
+            </div>
 
             <div class="bg-white rounded-[20px]"
                  style="box-shadow:0 2px 5px rgba(36,29,22,.04),0 14px 30px rgba(36,29,22,.07)">

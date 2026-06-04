@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\DashboardController;
+use App\Http\Controllers\HistoryController;
 use App\Http\Controllers\EventController;
 use App\Http\Controllers\ExpenseController;
 use App\Http\Controllers\ExpenseSplitController;
@@ -50,6 +51,9 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('/notes/{note}/entries/{entryType}',           [NoteEntryController::class, 'create'])->name('notes.entries.create');
     Route::post('/notes/{note}/entries',                      [NoteEntryController::class, 'store'])->name('notes.entries.store');
     Route::delete('/notes/{note}/entries/{entry}',            [NoteEntryController::class, 'destroy'])->name('notes.entries.destroy');
+
+    // History
+    Route::get('/history', [HistoryController::class, 'index'])->name('history.index');
 
     // Stub pages
     Route::get('/friends', fn() => view('friends.index'))->name('friends.index');
