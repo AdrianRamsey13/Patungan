@@ -1,5 +1,5 @@
 <x-app-layout>
-<div class="px-6 md:px-8 py-6 max-w-[800px]">
+<div class="px-6 md:px-8 py-6 max-w-4xl mx-auto">
     <h1 class="font-extrabold text-ink text-2xl mb-2" style="letter-spacing:-.02em">Tagihan</h1>
     <p class="text-ink-soft text-sm font-medium mb-8">Semua tagihan yang perlu kamu bayar.</p>
 

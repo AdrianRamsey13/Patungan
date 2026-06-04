@@ -1,5 +1,5 @@
 <x-app-layout>
-<div class="px-6 md:px-8 py-6 max-w-[800px]">
+<div class="px-6 md:px-8 py-6 max-w-4xl mx-auto">
 
     @if (session('success'))
         <div class="mb-4 px-4 py-3 rounded-xl bg-mint-soft text-mint-ink font-semibold text-sm">{{ session('success') }}</div>
@@ -39,7 +39,7 @@
         </div>
 
     @else
-        <div class="grid gap-3">
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
             @foreach ($notes as $note)
                 @php
                     $balance   = (int)($note->total_added ?? 0) - (int)($note->total_paid ?? 0);

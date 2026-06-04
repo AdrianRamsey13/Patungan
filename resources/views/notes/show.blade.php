@@ -1,5 +1,5 @@
 <x-app-layout>
-<div class="max-w-2xl mx-auto px-4 py-6">
+<div class="max-w-3xl mx-auto px-4 py-6">
 
     @if (session('success'))
         <div class="mb-4 px-4 py-3 rounded-xl bg-mint-soft text-mint-ink font-semibold text-sm">{{ session('success') }}</div>

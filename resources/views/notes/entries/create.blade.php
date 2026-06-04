@@ -1,5 +1,5 @@
 <x-app-layout>
-<div class="max-w-lg mx-auto px-4 py-6">
+<div class="max-w-2xl mx-auto px-4 py-6">
 
     @php
         $isAdd     = $entryType === 'tambah';

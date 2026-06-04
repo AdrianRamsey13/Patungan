@@ -1,5 +1,5 @@
 <x-app-layout>
-<div class="max-w-xl mx-auto px-4 py-6">
+<div class="max-w-2xl mx-auto px-4 py-6">
 
     {{-- Top bar --}}
     <div class="flex items-center justify-between mb-6">
