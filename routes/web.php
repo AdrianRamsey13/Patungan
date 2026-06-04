@@ -2,6 +2,8 @@
 
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\HistoryController;
+use App\Http\Controllers\MyDebtController;
+use App\Http\Controllers\MyReceivableController;
 use App\Http\Controllers\EventController;
 use App\Http\Controllers\ExpenseController;
 use App\Http\Controllers\ExpenseSplitController;
@@ -54,6 +56,10 @@ Route::middleware(['auth', 'verified'])->group(function () {
 
     // History
     Route::get('/history', [HistoryController::class, 'index'])->name('history.index');
+
+    // Summary card detail pages
+    Route::get('/my-debts',       [MyDebtController::class,       'index'])->name('my-debts.index');
+    Route::get('/my-receivables', [MyReceivableController::class, 'index'])->name('my-receivables.index');
 
     // Stub pages
     Route::get('/friends', fn() => view('friends.index'))->name('friends.index');

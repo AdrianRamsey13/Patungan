@@ -18,29 +18,28 @@
         </div>
     @endif
 
-    {{-- Greeting + CTA --}}
-    <div class="flex items-start justify-between mb-5 gap-3">
-        <div class="min-w-0">
-            <h1 class="text-ink font-extrabold text-2xl tracking-tight" style="letter-spacing:-.02em">
-                Halo, {{ explode(' ', Auth::user()->name)[0] }} 👋
-            </h1>
-            <p class="text-ink-soft text-sm font-medium mt-1">
-                Kamu ikut <b class="text-ink">{{ $events->count() }} event</b> split bill yang masih aktif.
-            </p>
-        </div>
-        <a href="{{ route('events.create') }}"
-           class="pt-btn pt-btn-primary flex-shrink-0 inline-flex items-center gap-2 px-4 py-3 rounded-[14px] text-sm font-bold">
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>
-            <span class="hidden sm:inline">Buat Event</span>
-            <span class="sm:hidden">Buat</span>
-        </a>
+    {{-- Greeting --}}
+    <div class="mb-5">
+        <h1 class="text-ink font-extrabold text-2xl tracking-tight" style="letter-spacing:-.02em">
+            Halo, {{ explode(' ', Auth::user()->name)[0] }} 👋
+        </h1>
+        <p class="text-ink-soft text-sm font-medium mt-1">
+            Kamu ikut <b class="text-ink">{{ $events->count() }} event</b> split bill yang masih aktif.
+        </p>
     </div>
 
     {{-- Summary Cards --}}
-    <div class="grid grid-cols-2 gap-3 md:gap-4 mb-6">
+    <div class="grid grid-cols-2 gap-3 md:gap-4 mb-4">
         <x-pt.summary-card type="owe"     :amount="$totalOwe"     :count="$oweCount" />
         <x-pt.summary-card type="receive" :amount="$totalReceive" :people="$receivePeople" />
     </div>
+
+    {{-- CTA — di bawah summary, lebih natural secara UX --}}
+    <a href="{{ route('events.create') }}"
+       class="pt-btn pt-btn-primary w-full justify-center rounded-[16px] py-4 text-base font-bold mb-6">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>
+        Buat Event Baru
+    </a>
 
     {{-- ── MAIN LAYOUT ─────────────────────────────────────
          Mobile:  flex-col  (events → history, stacked)

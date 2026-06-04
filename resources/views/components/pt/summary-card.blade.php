@@ -1,20 +1,24 @@
 @props(['type', 'amount', 'count' => 0, 'people' => 0])
 
 @php
-    // type: 'owe' | 'receive'
     $isOwe = $type === 'owe';
     $cfg = $isOwe
-        ? ['bg' => '#FCEFD2', 'iconBg' => '#F59E0B', 'ink' => '#C77C05',
+        ? ['bg'    => '#FCEFD2', 'iconBg' => '#F59E0B', 'ink' => '#C77C05',
            'label' => 'Kamu harus bayar',
            'sub'   => $count . ' tagihan belum lunas',
-           'arrow' => 'up']
-        : ['bg' => '#DDF6EC', 'iconBg' => '#12B886', 'ink' => '#0B8A65',
+           'arrow' => 'up',
+           'href'  => route('my-debts.index')]
+        : ['bg'    => '#DDF6EC', 'iconBg' => '#12B886', 'ink' => '#0B8A65',
            'label' => 'Kamu bakal terima',
            'sub'   => 'dari ' . $people . ' orang',
-           'arrow' => 'down'];
+           'arrow' => 'down',
+           'href'  => route('my-receivables.index')];
 @endphp
 
-<div style="background:{{ $cfg['bg'] }};border-radius:22px;padding:18px 20px;position:relative;overflow:hidden">
+<a href="{{ $cfg['href'] }}"
+   class="pt-lift block no-underline"
+   style="background:{{ $cfg['bg'] }};border-radius:22px;padding:18px 20px;position:relative;overflow:hidden">
+
     {{-- Icon + label --}}
     <div class="flex items-center gap-2.5 mb-3">
         <div style="width:34px;height:34px;border-radius:11px;background:{{ $cfg['iconBg'] }};color:#fff;display:flex;align-items:center;justify-content:center;flex-shrink:0">
@@ -29,6 +33,11 @@
             @endif
         </div>
         <span style="font-weight:800;font-size:13.5px;color:{{ $cfg['ink'] }};white-space:nowrap">{{ $cfg['label'] }}</span>
+        {{-- Chevron kanan — hint bahwa ini clickable --}}
+        <svg class="ml-auto flex-shrink-0" width="14" height="14" viewBox="0 0 24 24" fill="none"
+             stroke="{{ $cfg['ink'] }}" stroke-width="2.5" stroke-linecap="round" opacity="0.6">
+            <path d="M9 6l6 6-6 6"/>
+        </svg>
     </div>
 
     {{-- Nominal --}}
@@ -38,4 +47,5 @@
 
     {{-- Sub-info --}}
     <div style="margin-top:7px;font-size:12.5px;color:#6B6157;font-weight:600">{{ $cfg['sub'] }}</div>
-</div>
+
+</a>

@@ -1,13 +1,22 @@
 @props(['split', 'divider' => false])
 
 @php
-    // $split: ExpenseSplit model dengan relasi expense.payer, expense.event, user
-    $expense  = $split->expense;
-    $isPayer  = $expense->paid_by === auth()->id();  // uang masuk ke kita
-    $who      = $isPayer ? $split->user->name : $expense->payer->name;
-    $label    = $isPayer
-        ? "{$who} bayar ke kamu"
-        : "Kamu bayar ke {$who}";
+    $expense = $split->expense;
+
+    // isPayer: expense.paid_by === auth user (uang masuk ke kita)
+    // Handles null paid_by (guest payer) safely
+    $isPayer = $expense->paid_by !== null && $expense->paid_by === auth()->id();
+
+    // Nama orang yang terlibat — handle null untuk guest split & guest payer
+    if ($isPayer) {
+        // Kita yang nalangin → "X bayar ke kamu" — X = debtor
+        $who = $split->user?->name ?? $split->guest_name ?? 'Tamu';
+    } else {
+        // Kita yang bayar → "Kamu bayar ke X" — X = payer
+        $who = $expense->payer?->name ?? $expense->guest_payer_name ?? 'Tamu';
+    }
+
+    $label     = $isPayer ? "{$who} bayar ke kamu" : "Kamu bayar ke {$who}";
     $amountFmt = 'Rp ' . number_format($split->amount_owed, 0, ',', '.');
     $when      = $split->paid_at?->diffForHumans() ?? '-';
 @endphp
@@ -33,12 +42,13 @@
     <div class="flex-1 min-w-0">
         <div class="font-bold text-ink truncate" style="font-size:13px">{{ $label }}</div>
         <div class="text-muted font-semibold truncate" style="font-size:11.5px">
-            {{ $expense->event->name }} · {{ $when }}
+            {{ $expense->event->name ?? '—' }} · {{ $when }}
         </div>
     </div>
 
     {{-- Amount --}}
-    <div class="pt-num font-extrabold flex-shrink-0" style="font-size:13.5px;color:{{ $isPayer ? '#0B8A65' : '#241D16' }}">
+    <div class="pt-num font-extrabold flex-shrink-0"
+         style="font-size:13.5px;color:{{ $isPayer ? '#0B8A65' : '#241D16' }}">
         {{ $isPayer ? '+' : '–' }}{{ $amountFmt }}
     </div>
 </div>
