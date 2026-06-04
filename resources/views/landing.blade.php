@@ -143,6 +143,274 @@
     </div>
 </section>
 
+{{-- ── WALL OF EXCUSES + FAKE WHATSAPP ────────────────── --}}
+<section class="px-6 md:px-16 pb-28 max-w-4xl mx-auto">
+
+    {{-- Section header --}}
+    <div class="text-center mb-12">
+        <div class="inline-flex items-center gap-2 bg-white px-4 py-1.5 rounded-pill text-sm font-bold text-ink-soft mb-5"
+             style="box-shadow:0 2px 8px rgba(36,29,22,.08)">
+            😅 Terlalu Familiar
+        </div>
+        <h2 class="pt-num font-extrabold text-ink mb-3"
+            style="font-size:clamp(1.6rem,4vw,2.2rem);letter-spacing:-.025em">
+            Kalimat yang udah kamu hafal<br>di luar kepala
+        </h2>
+        <p class="text-ink-soft font-medium text-base max-w-md mx-auto">
+            Setiap minggu, di setiap grup, selalu ada satu orang yang kirim ini.
+        </p>
+    </div>
+
+    {{-- ── WALL OF EXCUSES ── --}}
+    @php
+        $excuses = [
+            ['text' => '"Transfernya nanti ya."',           'sent' => false],
+            ['text' => '"Aku lagi di jalan."',              'sent' => true],
+            ['text' => '"QRIS-nya mana?"',                  'sent' => false],
+            ['text' => '"Eh aku kira udah."',               'sent' => true],
+            ['text' => '"Nanti malem ya."',                 'sent' => false],
+            ['text' => '"Besok gajian nih."',               'sent' => true],
+            ['text' => '"Sinyal jelek sorry 😅"',           'sent' => false],
+            ['text' => '"HP aku mati seharian."',           'sent' => true],
+            ['text' => '"Remind aku besok ya."',            'sent' => false],
+            ['text' => '"Udah aku suruh adek transfer."',   'sent' => true],
+        ];
+    @endphp
+
+    <div class="grid grid-cols-2 md:grid-cols-3 gap-3 mb-6"
+         x-data="{
+             active: -1,
+             init() {
+                 setTimeout(() => {
+                     this.active = 0;
+                     setInterval(() => {
+                         this.active = Math.floor(Math.random() * {{ count($excuses) }});
+                     }, 1700);
+                 }, 600);
+             }
+         }">
+        @foreach ($excuses as $i => $ex)
+            <div class="rounded-[16px] px-4 py-3 text-sm font-bold transition-all duration-300 cursor-default select-none"
+                 :class="{{ $i }} === active
+                     ? 'scale-[1.04] -rotate-1 shadow-pop ring-2 ring-coral z-10'
+                     : 'scale-100 rotate-0'"
+                 style="{{ $ex['sent']
+                     ? 'background:#DFF7D5;color:#1A7341;border:1.5px solid #B8EDCA'
+                     : 'background:#FFFFFF;color:#241D16;border:1.5px solid #F1E8DC;box-shadow:0 2px 8px rgba(36,29,22,.06)' }}">
+                <div class="flex items-start gap-2">
+                    <span class="text-base flex-shrink-0 mt-0.5">{{ $ex['sent'] ? '↗' : '↙' }}</span>
+                    <span class="leading-snug">{{ $ex['text'] }}</span>
+                </div>
+            </div>
+        @endforeach
+    </div>
+
+    {{-- Bottom tagline excuses --}}
+    <div class="text-center mb-16">
+        <p class="text-ink-soft font-semibold text-sm">
+            Dan grup WA kamu masih penuh <span class="text-coral font-bold">notifikasi belum dibaca.</span>
+        </p>
+    </div>
+
+    {{-- ── FAKE WHATSAPP BEFORE/AFTER ── --}}
+    <div class="text-center mb-10">
+        <p class="text-muted font-bold text-sm tracking-wide uppercase" style="letter-spacing:.08em">Contoh nyatanya</p>
+        <h3 class="pt-num font-extrabold text-ink mt-2" style="font-size:1.5rem;letter-spacing:-.02em">
+            Sebelum vs Sesudah FunBill
+        </h3>
+    </div>
+
+    <div class="grid md:grid-cols-2 gap-6 items-start md:items-start">
+
+        {{-- ── SEBELUM: WA Chaos ── --}}
+        <div>
+            <div class="flex items-center justify-center gap-2 mb-4">
+                <span class="bg-red-100 text-red-500 text-xs font-bold px-3 py-1 rounded-pill">😵 Sebelum FunBill</span>
+            </div>
+
+            {{-- Phone frame --}}
+            <div class="mx-auto max-w-[280px] rounded-[36px] overflow-hidden"
+                 style="border:3px solid #241D16;box-shadow:0 20px 48px rgba(36,29,22,.20)">
+
+                {{-- WA Header --}}
+                <div class="flex items-center gap-3 px-4 py-3"
+                     style="background:linear-gradient(135deg,#075E54,#128C7E)">
+                    <div class="w-9 h-9 rounded-full bg-white/20 flex items-center justify-center text-sm flex-shrink-0">🌴</div>
+                    <div class="min-w-0 flex-1">
+                        <div class="font-bold text-white text-sm truncate">Patungan Liburan Bali</div>
+                        <div class="text-white/70 text-xs">Ramsey, Andi, Sinta, Budi + 2</div>
+                    </div>
+                    <div class="w-6 h-6 bg-red-500 rounded-full flex items-center justify-center text-white text-xs font-bold flex-shrink-0">7</div>
+                </div>
+
+                {{-- Chat messages — fixed height + scrollable, auto-scroll ke bawah --}}
+                <div class="px-3 py-3 flex flex-col gap-2"
+                     style="background:#ECE5DD;height:340px;overflow-y:auto;scroll-behavior:smooth"
+                     x-data x-init="$el.scrollTop = $el.scrollHeight">
+                    @php
+                        $waMessages = [
+                            ['name' => 'Ramsey', 'color' => '#FF6B4A', 'msg' => 'guys total tagihan makan malem brp?', 'time' => '20.14'],
+                            ['name' => 'Andi',   'color' => '#2BA8F4', 'msg' => 'bentar aku hitung dulu', 'time' => '20.15'],
+                            ['name' => 'Sinta',  'color' => '#7B61FF', 'msg' => 'aku bayar 150 tadi kan?', 'time' => '20.15'],
+                            ['name' => 'Budi',   'color' => '#F59E0B', 'msg' => 'eh aku lupa pesen apa tadi 😅', 'time' => '20.16'],
+                            ['name' => 'Ramsey', 'color' => '#FF6B4A', 'msg' => 'Andi gimana?? udah dihitung belum', 'time' => '20.18'],
+                            ['name' => 'Sinta',  'color' => '#7B61FF', 'msg' => 'aku udah transfer loh', 'time' => '20.19'],
+                            ['name' => 'Budi',   'color' => '#F59E0B', 'msg' => 'transfer ke siapa?', 'time' => '20.19'],
+                            ['name' => 'Sinta',  'color' => '#7B61FF', 'msg' => 'ke Ramsey?', 'time' => '20.20'],
+                            ['name' => 'Ramsey', 'color' => '#FF6B4A', 'msg' => 'belum masuk nih 😐', 'time' => '20.22'],
+                        ];
+                    @endphp
+
+                    @foreach ($waMessages as $m)
+                        <div class="max-w-[80%] {{ $loop->index % 3 === 0 ? 'self-end' : 'self-start' }}">
+                            <div class="rounded-[12px] px-3 py-2 text-xs shadow-sm"
+                                 style="{{ $loop->index % 3 === 0
+                                     ? 'background:#DCF8C6;border-radius:12px 0 12px 12px'
+                                     : 'background:#fff;border-radius:0 12px 12px 12px' }}">
+                                @if ($loop->index % 3 !== 0)
+                                    <div class="font-bold text-[11px] mb-0.5" style="color:{{ $m['color'] }}">
+                                        {{ $m['name'] }}
+                                    </div>
+                                @endif
+                                <div class="text-gray-800 leading-snug">{{ $m['msg'] }}</div>
+                                <div class="text-right text-gray-400 text-[10px] mt-0.5">{{ $m['time'] }}</div>
+                            </div>
+                        </div>
+                    @endforeach
+
+                    {{-- Typing indicator --}}
+                    <div class="self-start">
+                        <div class="bg-white rounded-[12px] px-3 py-2 shadow-sm inline-flex items-center gap-1.5">
+                            <span class="text-[11px] text-gray-500">Andi mengetik</span>
+                            <div class="flex gap-0.5">
+                                @foreach([0, 1, 2] as $d)
+                                    <div class="w-1.5 h-1.5 bg-gray-400 rounded-full animate-bounce" style="animation-delay:{{ $d * 0.15 }}s"></div>
+                                @endforeach
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                {{-- WA Input bar --}}
+                <div class="flex items-center gap-2 px-3 py-2" style="background:#F0F0F0">
+                    <div class="flex-1 bg-white rounded-full px-3 py-1.5 text-xs text-gray-400">Ketik pesan</div>
+                    <div class="w-8 h-8 rounded-full flex items-center justify-center"
+                         style="background:linear-gradient(135deg,#075E54,#128C7E)">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="white"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-6h2v6zm0-8h-2V7h2v2z"/></svg>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        {{-- ── SESUDAH: FunBill Clean ── --}}
+        <div>
+            <div class="flex items-center justify-center gap-2 mb-4">
+                <span class="bg-mint-soft text-mint-ink text-xs font-bold px-3 py-1 rounded-pill">✅ Sesudah FunBill</span>
+            </div>
+
+            {{-- Phone frame --}}
+            <div class="mx-auto max-w-[280px] rounded-[36px] overflow-hidden"
+                 style="border:3px solid #241D16;box-shadow:0 20px 48px rgba(36,29,22,.20);background:#FFF7EF">
+
+                {{-- FunBill Header --}}
+                <div class="flex items-center gap-3 px-4 py-3 bg-white border-b border-line">
+                    <div class="w-9 h-9 rounded-[12px] bg-sky-soft flex items-center justify-center flex-shrink-0">
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#2BA8F4" stroke-width="2" stroke-linecap="round"><path d="M21.5 3.5L11 14M21.5 3.5l-6.6 17.5-3.9-7.5-7.5-3.9L21.5 3.5z"/></svg>
+                    </div>
+                    <div class="min-w-0 flex-1">
+                        <div class="font-extrabold text-ink text-sm truncate">Patungan Liburan Bali</div>
+                        <div class="text-muted text-xs font-semibold">6 anggota · Rp 850.000</div>
+                    </div>
+                    <div class="w-8 h-8 rounded-full bg-coral flex items-center justify-center">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>
+                    </div>
+                </div>
+
+                {{-- FunBill content --}}
+                <div class="px-3 py-3 flex flex-col gap-2.5" style="height:340px;overflow-y:auto">
+
+                    {{-- Summary card --}}
+                    <div class="rounded-[14px] px-3 py-2.5" style="background:linear-gradient(135deg,#2BA8F4,#1184D6)">
+                        <div class="text-white/80 text-[10px] font-bold">Per orang</div>
+                        <div class="text-white font-extrabold text-xl pt-num">Rp 141.667</div>
+                        <div class="text-white/70 text-[10px] font-semibold mt-0.5">Dibagi rata 6 orang</div>
+                    </div>
+
+                    {{-- Members --}}
+                    <div class="bg-white rounded-[14px] overflow-hidden" style="box-shadow:0 1px 4px rgba(36,29,22,.08)">
+                        @php
+                            $funMembers = [
+                                ['name' => 'Ramsey', 'color' => '#FF6B4A', 'paid' => true,  'note' => 'nalangin'],
+                                ['name' => 'Andi',   'color' => '#2BA8F4', 'paid' => true,  'note' => null],
+                                ['name' => 'Sinta',  'color' => '#7B61FF', 'paid' => true,  'note' => null],
+                                ['name' => 'Budi',   'color' => '#F59E0B', 'paid' => false, 'note' => null],
+                                ['name' => 'Dina',   'color' => '#12B886', 'paid' => true,  'note' => null],
+                                ['name' => 'Kiki',   'color' => '#EC5F9E', 'paid' => false, 'note' => null],
+                            ];
+                        @endphp
+                        @foreach ($funMembers as $m)
+                            <div class="flex items-center gap-2 px-3 py-2 {{ !$loop->first ? 'border-t border-line' : '' }}">
+                                <div class="w-6 h-6 rounded-full flex-shrink-0 flex items-center justify-center text-white text-[9px] font-extrabold"
+                                     style="background:{{ $m['color'] }}">
+                                    {{ strtoupper(substr($m['name'], 0, 2)) }}
+                                </div>
+                                <div class="flex-1 min-w-0">
+                                    <div class="text-ink text-xs font-bold flex items-center gap-1.5">
+                                        {{ $m['name'] }}
+                                        @if ($m['note'])
+                                            <span class="text-[9px] bg-coral-soft text-coral px-1.5 py-0 rounded-pill font-bold">{{ $m['note'] }}</span>
+                                        @endif
+                                    </div>
+                                </div>
+                                @if ($m['paid'])
+                                    <span class="flex items-center gap-1 bg-mint-soft text-mint-ink rounded-pill px-2 py-0.5 text-[10px] font-bold flex-shrink-0">
+                                        <svg width="8" height="8" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round"><path d="M5 12.5l5 5 9-11"/></svg>
+                                        Lunas
+                                    </span>
+                                @else
+                                    <span class="bg-amber-soft text-amber-ink rounded-pill px-2 py-0.5 text-[10px] font-bold flex-shrink-0">
+                                        Belum
+                                    </span>
+                                @endif
+                            </div>
+                        @endforeach
+                    </div>
+
+                    {{-- Progress --}}
+                    <div class="bg-white rounded-[14px] px-3 py-2.5" style="box-shadow:0 1px 4px rgba(36,29,22,.06)">
+                        <div class="flex items-center justify-between mb-1.5">
+                            <span class="text-ink text-xs font-bold">Progress</span>
+                            <span class="text-xs font-bold"><b class="text-mint-ink">4</b>/6 lunas</span>
+                        </div>
+                        <div class="h-2 rounded-full overflow-hidden" style="background:#F0E8DC">
+                            <div class="h-full rounded-full" style="width:67%;background:linear-gradient(90deg,#12B886,#0B8A65)"></div>
+                        </div>
+                    </div>
+                </div>
+
+                {{-- Bottom bar --}}
+                <div class="px-4 py-3 bg-white border-t border-line">
+                    <div class="bg-coral text-white rounded-[12px] py-2 text-center text-xs font-bold">
+                        ✓ Tandai Lunas
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    {{-- CTA line --}}
+    <div class="text-center mt-12">
+        <p class="text-ink-soft font-medium mb-4">Cukup dramanya. Beres-beresin dengan FunBill.</p>
+        <a href="{{ route('register') }}"
+           class="pt-btn pt-btn-primary inline-flex items-center gap-2 px-7 py-3.5 rounded-[16px] text-sm font-bold">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>
+            Coba FunBill Gratis
+        </a>
+    </div>
+
+</section>
+
 {{-- ── FEATURES ─────────────────────────────────────── --}}
 <section class="px-6 md:px-16 pb-24 max-w-4xl mx-auto">
     <h2 class="pt-num font-extrabold text-ink text-center mb-12"

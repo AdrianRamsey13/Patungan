@@ -161,12 +161,17 @@
                 <div class="flex flex-col gap-2">
                     @foreach ($myDebts as $settlement)
                         @if ($settlement['remaining'] > 0)
+                        @php $creditor = $settlement['creditor_member']; $debtor = $settlement['debtor_member']; @endphp
                         <div class="bg-white rounded-[14px] px-3.5 py-3 flex items-center gap-3"
                              style="box-shadow:0 1px 3px rgba(36,29,22,.06)">
-                            <x-pt.avatar :name="$settlement['creditor']->name" size="sm" />
+                            <x-pt.avatar :name="$creditor->displayName()" size="sm" />
                             <div class="flex-1 min-w-0">
-                                <div class="font-bold text-ink text-sm">{{ $settlement['creditor']->name }}</div>
-                                {{-- Breakdown per expense --}}
+                                <div class="font-bold text-ink text-sm flex items-center gap-1.5">
+                                    {{ $creditor->displayName() }}
+                                    @if ($creditor->isGuest())
+                                        <span class="text-[10px] font-bold bg-line text-muted px-1.5 py-0.5 rounded-pill">tamu</span>
+                                    @endif
+                                </div>
                                 <div class="text-muted text-xs font-semibold mt-0.5">
                                     @foreach ($settlement['splits'] as $split)
                                         @if ($split->remaining() > 0)
@@ -183,7 +188,7 @@
                                 </span>
                                 @if ($event->status === 'open')
                                     <form method="POST"
-                                          action="{{ route('events.pay', [$event, $settlement['creditor']]) }}">
+                                          action="{{ route('events.pay', [$event, $debtor, $creditor]) }}">
                                         @csrf
                                         <button type="submit"
                                                 class="pt-btn pt-btn-primary px-3 py-1.5 rounded-[10px] text-xs font-bold">
@@ -220,11 +225,17 @@
 
                 <div class="flex flex-col gap-2">
                     @foreach ($myCredits as $settlement)
+                        @php $debtorM = $settlement['debtor_member']; @endphp
                         <div class="bg-white rounded-[14px] px-3.5 py-3 flex items-center gap-3"
                              style="box-shadow:0 1px 3px rgba(36,29,22,.06)">
-                            <x-pt.avatar :name="$settlement['debtor']->name" size="sm" />
+                            <x-pt.avatar :name="$debtorM->displayName()" size="sm" />
                             <div class="flex-1 min-w-0">
-                                <div class="font-bold text-ink text-sm">{{ $settlement['debtor']->name }}</div>
+                                <div class="font-bold text-ink text-sm flex items-center gap-1.5">
+                                    {{ $debtorM->displayName() }}
+                                    @if ($debtorM->isGuest())
+                                        <span class="text-[10px] font-bold bg-line text-muted px-1.5 py-0.5 rounded-pill">tamu</span>
+                                    @endif
+                                </div>
                                 <div class="text-muted text-xs font-semibold mt-0.5">
                                     @foreach ($settlement['splits'] as $split)
                                         {{ $split->expense->description }}
@@ -266,6 +277,85 @@
                 <div class="text-muted text-xs font-semibold mt-1">Tidak ada utang atau piutang untukmu di event ini.</div>
             </div>
         @endif
+
+        {{-- Pembayaran tamu (hanya creator) --}}
+        @if (Auth::id() === $event->created_by && $guestSettlements->isNotEmpty())
+            <div class="bg-white rounded-[18px] p-4 mt-3"
+                 style="box-shadow:0 1px 3px rgba(36,29,22,.06),0 6px 16px rgba(36,29,22,.05)">
+                <div class="flex items-center justify-between mb-3">
+                    <div class="flex items-center gap-2">
+                        <div class="w-7 h-7 rounded-[9px] bg-grape-soft text-grape flex items-center justify-center flex-shrink-0">
+                            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round">
+                                <circle cx="9" cy="8" r="3.2"/><path d="M3.5 19a5.5 5.5 0 0 1 11 0"/>
+                                <path d="M16 5.2a3.2 3.2 0 0 1 0 6M17.5 19a5.5 5.5 0 0 0-3-4.9"/>
+                            </svg>
+                        </div>
+                        <span class="font-extrabold text-ink text-sm">Pembayaran Tamu</span>
+                    </div>
+                    {{-- Tandai semua tamu lunas --}}
+                    @if ($event->status === 'open')
+                        <form method="POST" action="{{ route('events.guests.mark-all-paid', $event) }}" id="mark-all-guests-form">
+                            @csrf
+                            <button type="button"
+                                    @click="ptConfirm({
+                                        title: 'Tandai semua tamu lunas?',
+                                        message: 'Semua pembayaran tamu di event ini akan dikonfirmasi sekaligus.',
+                                        confirmText: 'Ya, Konfirmasi',
+                                        isDanger: false
+                                    }).then(ok => ok && document.getElementById('mark-all-guests-form').submit())"
+                                    class="text-coral text-xs font-bold hover:underline">
+                                Tandai Semua Lunas
+                            </button>
+                        </form>
+                    @endif
+                </div>
+
+                <div class="flex flex-col gap-2">
+                    @foreach ($guestSettlements as $settlement)
+                        @php
+                            $gDebtor   = $settlement['debtor_member'];
+                            $gCreditor = $settlement['creditor_member'];
+                        @endphp
+                        <div class="flex items-center gap-3 px-3 py-2.5 rounded-[12px] bg-cream">
+                            <x-pt.avatar :name="$gDebtor->displayName()" size="sm" />
+                            <div class="flex-1 min-w-0">
+                                <div class="text-ink text-xs font-bold flex items-center gap-1.5">
+                                    {{ $gDebtor->displayName() }}
+                                    @if ($gDebtor->isGuest())
+                                        <span class="text-[9px] bg-line text-muted px-1.5 py-0.5 rounded-pill">tamu</span>
+                                    @endif
+                                    <span class="text-muted font-semibold">→</span>
+                                    {{ $gCreditor->displayName() }}
+                                    @if ($gCreditor->isGuest())
+                                        <span class="text-[9px] bg-line text-muted px-1.5 py-0.5 rounded-pill">tamu</span>
+                                    @endif
+                                </div>
+                                <div class="text-muted text-[10px] font-semibold mt-0.5">
+                                    @foreach ($settlement['splits'] as $split)
+                                        {{ $split->expense->description }}@if (!$loop->last), @endif
+                                    @endforeach
+                                </div>
+                            </div>
+                            <div class="flex flex-col items-end gap-1 flex-shrink-0">
+                                <span class="pt-num font-extrabold text-ink text-sm">
+                                    Rp {{ number_format($settlement['remaining'], 0, ',', '.') }}
+                                </span>
+                                @if ($event->status === 'open')
+                                    <form method="POST"
+                                          action="{{ route('events.pay', [$event, $gDebtor, $gCreditor]) }}">
+                                        @csrf
+                                        <button type="submit"
+                                                class="text-coral text-[10px] font-bold hover:underline">
+                                            Konfirmasi
+                                        </button>
+                                    </form>
+                                @endif
+                            </div>
+                        </div>
+                    @endforeach
+                </div>
+            </div>
+        @endif
     </div>
     @endif
 
@@ -274,35 +364,34 @@
         <h2 class="font-extrabold text-ink mb-3" style="font-size:15px">Anggota Event</h2>
         <div class="bg-white rounded-[18px] overflow-hidden"
              style="box-shadow:0 2px 5px rgba(36,29,22,.04),0 8px 20px rgba(36,29,22,.06)">
-            @foreach ($event->members as $member)
+            @foreach ($event->eventMembers as $member)
                 @php
-                    $isCreator       = $member->id === $event->created_by;
-                    $isMe            = $member->id === Auth::id();
-                    $memberDebts     = $settlements->filter(fn($s) => $s['debtor']->id === $member->id);
-                    $hasDebts        = $memberDebts->isNotEmpty();
-                    $allSettled      = $hasDebts && $memberDebts->every(fn($s) => $s['remaining'] === 0);
+                    $isCreator        = !$member->isGuest() && $member->user_id === $event->created_by;
+                    $isMe             = !$member->isGuest() && $member->user_id === Auth::id();
+                    $memberDebts      = $settlements->filter(fn($s) => $s['debtor_member']->id === $member->id);
+                    $hasDebts         = $memberDebts->isNotEmpty();
+                    $allSettled       = $hasDebts && $memberDebts->every(fn($s) => $s['remaining'] === 0);
                     $hasPaidSomething = $hasDebts && $memberDebts->some(fn($s) => $s['total_paid'] > 0);
-                    $hasUnpaid       = $hasDebts && $memberDebts->some(fn($s) => $s['remaining'] > 0);
+                    $hasUnpaid        = $hasDebts && $memberDebts->some(fn($s) => $s['remaining'] > 0);
 
-                    // Status:
-                    // lunas    = creator, atau tidak punya utang, atau semua utang lunas
-                    // sebagian = sudah bayar ke sebagian creditor tapi belum semua
-                    // belum    = belum bayar ke siapapun
                     $memberStatus = match(true) {
-                        $isCreator || !$hasDebts => 'lunas',
-                        $allSettled              => 'lunas',
+                        $isCreator || !$hasDebts        => 'lunas',
+                        $allSettled                     => 'lunas',
                         $hasPaidSomething && $hasUnpaid => 'sebagian',
-                        default                  => 'belum',
+                        default                         => 'belum',
                     };
                 @endphp
                 <div class="flex items-center gap-3 px-4 py-3 {{ !$loop->first ? 'border-t border-line' : '' }}">
-                    <x-pt.avatar :name="$member->name" size="md"
-                                 :ring="$isMe ? '#FFE7DF' : '#fff'" />
+                    <x-pt.avatar :name="$member->displayName()" size="md"
+                                 :ring="$isMe ? '#FFE7DF' : ($member->isGuest() ? '#F1E8DC' : '#fff')" />
                     <div class="flex-1 min-w-0">
-                        <div class="font-bold text-ink text-sm flex items-center gap-2">
-                            {{ $isMe ? 'Kamu' : $member->name }}
+                        <div class="font-bold text-ink text-sm flex items-center gap-2 flex-wrap">
+                            {{ $isMe ? 'Kamu' : $member->displayName() }}
                             @if ($isCreator)
                                 <span class="text-xs font-bold text-coral bg-coral-soft px-2 py-0.5 rounded-pill">nalangin</span>
+                            @endif
+                            @if ($member->isGuest())
+                                <span class="text-xs font-bold text-muted bg-line px-2 py-0.5 rounded-pill">tamu</span>
                             @endif
                         </div>
                     </div>
@@ -316,8 +405,8 @@
                                 @csrf @method('DELETE')
                                 <button type="button"
                                         @click="ptConfirm({
-                                            title: 'Keluarkan {{ addslashes($member->name) }}?',
-                                            message: '{{ addslashes($member->name) }} akan dikeluarkan dari event ini. Tindakan ini tidak bisa dibatalkan.',
+                                            title: 'Keluarkan {{ addslashes($member->displayName()) }}?',
+                                            message: '{{ addslashes($member->displayName()) }} akan dikeluarkan dari event ini.',
                                             confirmText: 'Ya, Keluarkan',
                                             isDanger: true
                                         }).then(ok => ok && document.getElementById('remove-member-{{ $member->id }}').submit())"

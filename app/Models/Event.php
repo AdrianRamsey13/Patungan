@@ -34,18 +34,31 @@ class Event extends Model
         return $this->belongsTo(User::class, 'created_by');
     }
 
-    // Anggota event (via pivot event_members)
+    // Anggota user terdaftar saja (via BelongsToMany — untuk backward compat)
     public function members(): BelongsToMany
     {
         return $this->belongsToMany(User::class, 'event_members')
-                    ->withPivot('joined_at')
-                    ->withTimestamps();
+                    ->withPivot('joined_at', 'guest_name')
+                    ->withTimestamps()
+                    ->whereNotNull('event_members.user_id');
     }
 
-    // Record pivot event_members
+    // Semua peserta: user + guest (sebagai EventMember records)
     public function eventMembers(): HasMany
     {
         return $this->hasMany(EventMember::class);
+    }
+
+    // Total peserta (user + guest)
+    public function totalParticipantCount(): int
+    {
+        return $this->eventMembers()->count();
+    }
+
+    // Jumlah guest non-user
+    public function guestCount(): int
+    {
+        return $this->eventMembers()->whereNull('user_id')->count();
     }
 
     // Semua pengeluaran dalam event ini

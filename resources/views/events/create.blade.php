@@ -20,7 +20,9 @@
                   this.selectedIds.includes(id)
                       ? this.selectedIds = this.selectedIds.filter(i => i !== id)
                       : this.selectedIds.push(id);
-              }
+              },
+              // total semua peserta (kamu + selected users) — guest count di-track terpisah di child x-data
+              totalUsers() { return this.selectedIds.length + 1; }
           }">
         @csrf
 
@@ -124,9 +126,73 @@
                 @error('members') <p class="mt-1.5 text-red-500 text-xs font-semibold">{{ $message }}</p> @enderror
             </div>
 
+            {{-- ── Tambah orang lain (non-user) ── --}}
+            <div class="border-t border-line pt-5"
+                 x-data="{
+                     guestCount: 0,
+                     maxGuests: 30,
+                     inc() { if (this.guestCount < this.maxGuests) this.guestCount++ },
+                     dec() { if (this.guestCount > 0) this.guestCount-- },
+                     setCount(v) {
+                         const n = parseInt(v) || 0;
+                         this.guestCount = Math.min(Math.max(n, 0), this.maxGuests);
+                     }
+                 }">
+
+                <div class="flex items-center justify-between mb-3">
+                    <div>
+                        <div class="text-xs font-extrabold text-ink">Tambah orang lain</div>
+                        <div class="text-muted text-xs font-medium mt-0.5">
+                            Peserta tanpa akun FunBill · maks. {{ 30 }} orang
+                        </div>
+                    </div>
+
+                    {{-- Counter +/- --}}
+                    <div class="flex items-center gap-1">
+                        <button type="button" @click="dec()"
+                                class="w-8 h-8 rounded-xl bg-cream border border-line flex items-center justify-center font-bold text-ink-soft hover:bg-white transition-colors"
+                                :class="guestCount === 0 ? 'opacity-40 cursor-not-allowed' : ''">
+                            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M5 12h14"/></svg>
+                        </button>
+                        <input type="number" min="0" max="30"
+                               :value="guestCount"
+                               @input="setCount($event.target.value)"
+                               class="w-16 h-8 text-center font-extrabold text-ink text-sm rounded-xl border border-line bg-white focus:outline-none focus:ring-2 focus:ring-coral"
+                               style="appearance:textfield;-moz-appearance:textfield"
+                               onwheel="this.blur()">
+                        <button type="button" @click="inc()"
+                                class="w-8 h-8 rounded-xl bg-cream border border-line flex items-center justify-center font-bold text-coral hover:bg-white transition-colors"
+                                :class="guestCount === maxGuests ? 'opacity-40 cursor-not-allowed' : ''">
+                            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>
+                        </button>
+                    </div>
+                </div>
+
+                {{-- Dynamic name fields --}}
+                <div x-show="guestCount > 0" class="flex flex-col gap-2.5" style="display:none">
+                    <template x-for="i in guestCount" :key="i">
+                        <div class="flex items-center gap-2.5">
+                            <div class="w-7 h-7 rounded-full bg-line flex items-center justify-center flex-shrink-0 text-muted text-xs font-extrabold"
+                                 x-text="i"></div>
+                            <input type="text"
+                                   :name="'guests[' + (i-1) + '][name]'"
+                                   :placeholder="'Nama tamu ' + i"
+                                   class="pt-input text-sm flex-1"
+                                   required>
+                        </div>
+                    </template>
+                    <p class="text-muted text-xs font-semibold mt-1">
+                        ⚠️ Nama wajib diisi — pembayaran tamu hanya bisa dikonfirmasi oleh creator event.
+                    </p>
+                </div>
+
+                @error('guests') <p class="mt-1.5 text-red-500 text-xs font-semibold">{{ $message }}</p> @enderror
+                @error('guests.*.name') <p class="mt-1.5 text-red-500 text-xs font-semibold">{{ $message }}</p> @enderror
+            </div>
+
         </div>
 
-        {{-- Footer: catatan + submit --}}
+        {{-- Footer: total count + submit --}}
         <div class="mt-4 bg-white rounded-[18px] px-5 py-4"
              style="box-shadow:0 -4px 16px rgba(36,29,22,.06),0 2px 8px rgba(36,29,22,.04)">
             <p class="text-muted text-xs font-semibold mb-3">

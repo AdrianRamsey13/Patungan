@@ -24,16 +24,17 @@ Route::middleware(['auth', 'verified'])->group(function () {
     // Events (resource kecuali index)
     Route::resource('events', EventController::class)->except(['index']);
 
-    // Member management
-    Route::post('/events/{event}/members',              [EventController::class, 'addMember'])->name('events.members.add');
-    Route::delete('/events/{event}/members/{user}',     [EventController::class, 'removeMember'])->name('events.members.remove');
+    // Member management (pakai EventMember ID supaya cover user + guest)
+    Route::post('/events/{event}/members',                              [EventController::class, 'addMember'])->name('events.members.add');
+    Route::delete('/events/{event}/members/{eventMember}',             [EventController::class, 'removeMember'])->name('events.members.remove');
+    Route::post('/events/{event}/mark-all-guests-paid',                [EventController::class, 'markAllGuestsPaid'])->name('events.guests.mark-all-paid');
 
     // Expenses — nested di bawah event
-    Route::get('/events/{event}/expenses/create',       [ExpenseController::class, 'create'])->name('events.expenses.create');
-    Route::post('/events/{event}/expenses',             [ExpenseController::class, 'store'])->name('events.expenses.store');
+    Route::get('/events/{event}/expenses/create',                      [ExpenseController::class, 'create'])->name('events.expenses.create');
+    Route::post('/events/{event}/expenses',                            [ExpenseController::class, 'store'])->name('events.expenses.store');
 
-    // Tandai Lunas — debtor bayar ke creditor dalam 1 event
-    Route::post('/events/{event}/pay/{creditor}',       [ExpenseSplitController::class, 'markPaid'])->name('events.pay');
+    // Tandai Lunas — route pakai EventMember ID (cover user + guest)
+    Route::post('/events/{event}/pay/{debtorMember}/{creditorMember}', [ExpenseSplitController::class, 'markPaid'])->name('events.pay');
 
     // Profile
     Route::get('/profile',    [ProfileController::class, 'edit'])->name('profile.edit');

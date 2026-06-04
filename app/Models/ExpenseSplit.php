@@ -9,7 +9,8 @@ class ExpenseSplit extends Model
 {
     protected $fillable = [
         'expense_id',
-        'user_id',
+        'user_id',       // null jika guest split
+        'guest_name',    // null jika user split
         'amount_owed',
         'amount_paid',
         'is_paid',
@@ -19,8 +20,8 @@ class ExpenseSplit extends Model
     protected function casts(): array
     {
         return [
-            'is_paid'  => 'boolean',
-            'paid_at'  => 'datetime',
+            'is_paid' => 'boolean',
+            'paid_at' => 'datetime',
         ];
     }
 
@@ -34,13 +35,24 @@ class ExpenseSplit extends Model
         return $this->belongsTo(User::class);
     }
 
-    // Sisa yang belum dibayar
+    public function isGuestSplit(): bool
+    {
+        return $this->user_id === null && $this->guest_name !== null;
+    }
+
+    public function displayName(): string
+    {
+        if ($this->isGuestSplit()) {
+            return $this->guest_name;
+        }
+        return $this->user?->name ?? 'Unknown';
+    }
+
     public function remaining(): int
     {
         return max(0, $this->amount_owed - $this->amount_paid);
     }
 
-    // Tandai lunas — set amount_paid = amount_owed
     public function markAsPaid(): bool
     {
         return $this->update([

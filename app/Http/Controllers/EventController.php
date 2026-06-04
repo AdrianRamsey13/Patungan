@@ -3,24 +3,20 @@
 namespace App\Http\Controllers;
 
 use App\Models\Event;
+use App\Models\EventMember;
 use App\Models\User;
 use App\Services\ExpenseSplitService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Auth;
 
 class EventController extends Controller
 {
     public function __construct(private ExpenseSplitService $splits) {}
 
-    public function index()
-    {
-        return redirect()->route('dashboard');
-    }
+    public function index() { return redirect()->route('dashboard'); }
 
     public function create()
     {
-        // Tampilkan semua user lain (bukan hanya teman) supaya bisa langsung dipakai
         $users = User::where('id', '!=', auth()->id())->orderBy('name')->get();
         return view('events.create', compact('users'));
     }
@@ -28,33 +24,55 @@ class EventController extends Controller
     public function store(Request $request)
     {
         $data = $request->validate([
-            'name'        => ['required', 'string', 'max:255'],
-            'category'    => ['required', 'in:jalan,konsumsi,acara,sewa,kado'],
-            'date_start'  => ['nullable', 'date'],
-            'date_end'    => ['nullable', 'date', 'after_or_equal:date_start'],
-            'description' => ['nullable', 'string', 'max:1000'],
-            'members'     => ['nullable', 'array'],
-            'members.*'   => ['integer', 'exists:users,id'],
+            'name'              => ['required', 'string', 'max:255'],
+            'category'          => ['required', 'in:jalan,konsumsi,acara,sewa,kado'],
+            'date_start'        => ['nullable', 'date'],
+            'date_end'          => ['nullable', 'date', 'after_or_equal:date_start'],
+            'description'       => ['nullable', 'string', 'max:1000'],
+            'members'           => ['nullable', 'array'],
+            'members.*'         => ['integer', 'exists:users,id'],
+            'guests'            => ['nullable', 'array', 'max:30'],
+            'guests.*.name'     => ['required_with:guests', 'string', 'max:100'],
         ]);
 
+        // Validasi total cap 50 orang
+        $registeredCount = count($data['members'] ?? []) + 1;
+        $guestCount      = count($data['guests'] ?? []);
+
+        if ($registeredCount + $guestCount > 50) {
+            return back()->withErrors(['members' => 'Total peserta tidak boleh lebih dari 50 orang.'])->withInput();
+        }
+
         $event = DB::transaction(function () use ($data) {
-            $user  = auth()->user();
             $event = Event::create([
                 'name'        => $data['name'],
                 'category'    => $data['category'],
                 'date_start'  => $data['date_start'] ?? null,
                 'date_end'    => $data['date_end'] ?? null,
                 'description' => $data['description'] ?? null,
-                'created_by'  => $user->id,
+                'created_by'  => auth()->id(),
                 'status'      => 'open',
             ]);
 
-            // Creator otomatis member + teman yang dipilih
-            $memberIds = collect($data['members'] ?? [])->push($user->id)->unique();
-            $event->members()->attach(
-                $memberIds->all(),
-                ['joined_at' => now()]
-            );
+            // Creator
+            EventMember::create(['event_id' => $event->id, 'user_id' => auth()->id(), 'joined_at' => now()]);
+
+            // Registered members
+            foreach ($data['members'] ?? [] as $userId) {
+                if ((int)$userId !== auth()->id()) {
+                    EventMember::create(['event_id' => $event->id, 'user_id' => $userId, 'joined_at' => now()]);
+                }
+            }
+
+            // Guests
+            foreach ($data['guests'] ?? [] as $guest) {
+                EventMember::create([
+                    'event_id'   => $event->id,
+                    'user_id'    => null,
+                    'guest_name' => trim($guest['name']),
+                    'joined_at'  => now(),
+                ]);
+            }
 
             return $event;
         });
@@ -69,40 +87,51 @@ class EventController extends Controller
 
         $event->load([
             'creator',
-            'members',
+            'eventMembers.user',
             'expenses.splits.user',
             'expenses.payer',
         ]);
 
         $userId      = (int) auth()->id();
         $settlements = $this->splits->calculateSettlements($event);
-        $myDebts     = $settlements->filter(fn($s) => $s['debtor']->id === $userId);
-        $myCredits   = $settlements->filter(fn($s) => $s['creditor']->id === $userId);
 
-        $paidCount   = $event->members->filter(function ($member) use ($event) {
-            // Member dianggap lunas jika semua splitnya lunas (atau dia sendiri yang nalangin)
-            $splits = $event->expenses->flatMap->splits->where('user_id', $member->id);
-            $debts  = $splits->filter(fn($s) => $s->expense->paid_by !== $member->id);
-            return $debts->isEmpty() || $debts->every(fn($s) => $s->is_paid);
-        })->count();
+        // Split berdasarkan debtor: apakah debtor adalah auth user
+        $myDebts   = $settlements->filter(fn($s) =>
+            ! $s['debtor_member']->isGuest() && $s['debtor_member']->user_id === $userId
+        );
+        $myCredits = $settlements->filter(fn($s) =>
+            ! $s['creditor_member']->isGuest() && $s['creditor_member']->user_id === $userId
+        );
 
-        // User yang belum ada di event ini (untuk chip picker tambah anggota)
-        $memberIds      = $event->members->pluck('id');
-        $availableUsers = User::whereNotIn('id', $memberIds)->orderBy('name')->get();
+        // Settlements yang melibatkan guest (hanya untuk creator)
+        $guestSettlements = collect();
+        if ($userId === $event->created_by) {
+            $guestSettlements = $settlements->filter(fn($s) =>
+                $s['debtor_member']->isGuest() || $s['creditor_member']->isGuest()
+            )->filter(fn($s) => $s['remaining'] > 0);
+        }
+
+        $paidCount   = $this->countFullyPaidMembers($event, $settlements);
+        $totalMembers = $event->eventMembers->count();
+
+        $memberIds      = $event->eventMembers->pluck('id');
+        $availableUsers = User::whereNotIn('id',
+            $event->eventMembers->whereNotNull('user_id')->pluck('user_id')
+        )->orderBy('name')->get();
 
         return view('events.show', compact(
             'event', 'userId', 'settlements',
-            'myDebts', 'myCredits', 'paidCount',
-            'availableUsers'
+            'myDebts', 'myCredits', 'guestSettlements',
+            'paidCount', 'totalMembers', 'availableUsers'
         ));
     }
 
     public function edit(Event $event)
     {
         $this->authorize('update', $event);
-        $event->load('members');
-        $memberIds = $event->members->pluck('id');
-        $addable   = User::whereNotIn('id', $memberIds)->orderBy('name')->get();
+        $event->load('eventMembers.user');
+        $memberUserIds = $event->eventMembers->whereNotNull('user_id')->pluck('user_id');
+        $addable = User::whereNotIn('id', $memberUserIds)->orderBy('name')->get();
 
         return view('events.edit', compact('event', 'addable'));
     }
@@ -110,7 +139,6 @@ class EventController extends Controller
     public function update(Request $request, Event $event)
     {
         $this->authorize('update', $event);
-
         $data = $request->validate([
             'name'        => ['required', 'string', 'max:255'],
             'category'    => ['required', 'in:jalan,konsumsi,acara,sewa,kado'],
@@ -119,9 +147,7 @@ class EventController extends Controller
             'description' => ['nullable', 'string', 'max:1000'],
             'status'      => ['required', 'in:open,closed'],
         ]);
-
         $event->update($data);
-
         return redirect()->route('events.show', $event)->with('success', 'Event diperbarui.');
     }
 
@@ -132,7 +158,7 @@ class EventController extends Controller
         return redirect()->route('dashboard')->with('success', 'Event dihapus.');
     }
 
-    // ── Tambah member ke event ──────────────────────────────
+    // ── Tambah user terdaftar ke event ──────────────────────
 
     public function addMember(Request $request, Event $event)
     {
@@ -144,11 +170,14 @@ class EventController extends Controller
             'user_ids.*' => ['integer', 'exists:users,id'],
         ]);
 
-        $existingIds = $event->members()->pluck('users.id')->map(fn($id) => (int) $id)->toArray();
-        $newIds      = array_values(array_diff(
-            array_map('intval', $data['user_ids']),
-            $existingIds
-        ));
+        // Cek total cap
+        $currentCount = $event->eventMembers()->count();
+        if ($currentCount + count($data['user_ids']) > 50) {
+            return back()->with('error', 'Total peserta tidak boleh lebih dari 50 orang.');
+        }
+
+        $existingUserIds = $event->eventMembers->whereNotNull('user_id')->pluck('user_id')->map(fn($id) => (int)$id)->toArray();
+        $newIds = array_values(array_diff(array_map('intval', $data['user_ids']), $existingUserIds));
 
         if (empty($newIds)) {
             return back()->with('error', 'Semua user yang dipilih sudah ada di event ini.');
@@ -156,37 +185,55 @@ class EventController extends Controller
 
         DB::transaction(function () use ($event, $newIds) {
             foreach ($newIds as $userId) {
-                $event->members()->attach($userId, ['joined_at' => now()]);
+                $member = EventMember::create(['event_id' => $event->id, 'user_id' => $userId, 'joined_at' => now()]);
                 foreach ($event->expenses()->with('splits')->get() as $expense) {
-                    $this->splits->recalculateForAdd($expense, $userId);
+                    $this->splits->recalculateForAdd($expense, $member);
                 }
             }
         });
 
-        $count = count($newIds);
-        return back()->with('success', "{$count} anggota berhasil ditambahkan.");
+        return back()->with('success', count($newIds) . ' anggota berhasil ditambahkan.');
     }
 
-    // ── Keluarkan member dari event ─────────────────────────
+    // ── Keluarkan member (user atau guest) dari event ───────
 
-    public function removeMember(Request $request, Event $event, User $user)
+    public function removeMember(Event $event, EventMember $eventMember)
     {
         $this->authorize('update', $event);
-        abort_if($event->created_by === $user->id, 422, 'Creator event tidak bisa dikeluarkan.');
+        abort_if($event->created_by === $eventMember->user_id && ! $eventMember->isGuest(), 422, 'Creator tidak bisa dikeluarkan.');
 
-        [$canRemove, $reason] = $this->splits->canRemoveMember($event, $user->id);
-
+        [$canRemove, $reason] = $this->splits->canRemoveMember($event, $eventMember);
         if (! $canRemove) {
             return back()->with('error', $reason);
         }
 
-        DB::transaction(function () use ($event, $user) {
+        DB::transaction(function () use ($event, $eventMember) {
             foreach ($event->expenses()->with('splits')->get() as $expense) {
-                $this->splits->recalculateForRemove($expense, $user->id);
+                $this->splits->recalculateForRemove($expense, $eventMember);
             }
-            $event->members()->detach($user->id);
+            $eventMember->delete();
         });
 
-        return back()->with('success', "{$user->name} berhasil dikeluarkan dari event.");
+        $name = $eventMember->displayName();
+        return back()->with('success', "{$name} berhasil dikeluarkan.");
+    }
+
+    // ── Creator tandai semua guest lunas sekaligus ──────────
+
+    public function markAllGuestsPaid(Event $event)
+    {
+        $this->authorize('update', $event);
+        $count = $this->splits->markAllGuestsPaid($event);
+        return back()->with('success', "{$count} pembayaran tamu berhasil dikonfirmasi.");
+    }
+
+    // ── Helper ──────────────────────────────────────────────
+
+    private function countFullyPaidMembers(Event $event, Collection $settlements): int
+    {
+        return $event->eventMembers->filter(function (EventMember $member) use ($settlements) {
+            $debts = $settlements->filter(fn($s) => $s['debtor_member']->id === $member->id);
+            return $debts->isEmpty() || $debts->every(fn($s) => $s['remaining'] === 0);
+        })->count();
     }
 }

@@ -3,8 +3,10 @@
 namespace App\Http\Controllers;
 
 use App\Models\Event;
+use App\Models\EventMember;
 use App\Services\ExpenseSplitService;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 
 class ExpenseController extends Controller
 {
@@ -23,19 +25,26 @@ class ExpenseController extends Controller
         abort_if($event->status === 'closed', 403, 'Event sudah ditutup.');
 
         $data = $request->validate([
-            'description' => ['required', 'string', 'max:255'],
-            'amount'      => ['required', 'integer', 'min:1'],
+            'description'      => ['required', 'string', 'max:255'],
+            'amount'           => ['required', 'integer', 'min:1'],
+            'payer_member_id'  => ['required', 'integer', 'exists:event_members,id'],
         ]);
 
-        $expense = \Illuminate\Support\Facades\DB::transaction(function () use ($data, $event) {
+        // Validasi payer adalah member event ini
+        $payerMember = EventMember::where('id', $data['payer_member_id'])
+            ->where('event_id', $event->id)
+            ->firstOrFail();
+
+        $expense = DB::transaction(function () use ($data, $event, $payerMember) {
             $expense = $event->expenses()->create([
-                'paid_by'     => auth()->id(),
-                'amount'      => $data['amount'],
-                'description' => $data['description'],
+                'paid_by'          => $payerMember->isGuest() ? null : $payerMember->user_id,
+                'guest_payer_name' => $payerMember->isGuest() ? $payerMember->guest_name : null,
+                'amount'           => $data['amount'],
+                'description'      => $data['description'],
             ]);
 
-            $memberIds = $event->members()->pluck('users.id');
-            $this->splits->createSplits($expense, $memberIds);
+            $members = $event->eventMembers()->with('user')->get();
+            $this->splits->createSplits($expense, $members);
 
             return $expense;
         });
