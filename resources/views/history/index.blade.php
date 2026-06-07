@@ -2,7 +2,7 @@
 <div class="px-6 md:px-8 py-6 max-w-3xl mx-auto">
 
     {{-- Header --}}
-    <div class="flex items-end justify-between mb-6">
+    <div class="flex items-end justify-between mb-4">
         <div>
             <h1 class="font-extrabold text-ink text-2xl" style="letter-spacing:-.02em">Riwayat Transaksi</h1>
             <p class="text-ink-soft text-sm font-medium mt-1">Semua pembayaran yang sudah terkonfirmasi.</p>
@@ -12,6 +12,21 @@
             <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M15 5l-7 7 7 7"/></svg>
             Dashboard
         </a>
+    </div>
+
+    {{-- Per-page selector --}}
+    <div class="flex items-center gap-2 mb-5">
+        <span class="text-ink-soft text-xs font-semibold">Tampilkan:</span>
+        @foreach ([5, 10, 20] as $option)
+            <a href="{{ request()->fullUrlWithQuery(['per_page' => $option, 'page' => 1]) }}"
+               class="px-3 py-1.5 rounded-[9px] text-xs font-bold transition-colors
+                      {{ $perPage === $option
+                           ? 'bg-coral text-white'
+                           : 'bg-white text-ink-soft border border-line hover:border-coral hover:text-coral' }}">
+                {{ $option }}
+            </a>
+        @endforeach
+        <span class="text-muted text-xs font-medium">per halaman</span>
     </div>
 
     @if ($history->isEmpty())
@@ -50,10 +65,14 @@
                 @endif
 
                 {{-- Page info --}}
-                <span class="text-ink-soft text-sm font-bold">
-                    {{ $history->currentPage() }} / {{ $history->lastPage() }}
-                    <span class="text-muted font-semibold ml-1">({{ $history->total() }} transaksi)</span>
-                </span>
+                <div class="text-center">
+                    <div class="text-ink-soft text-sm font-bold">
+                        {{ $history->currentPage() }} / {{ $history->lastPage() }}
+                    </div>
+                    <div class="text-muted text-xs font-medium mt-0.5">
+                        {{ $history->firstItem() }}–{{ $history->lastItem() }} dari {{ $history->total() }} transaksi
+                    </div>
+                </div>
 
                 {{-- Next --}}
                 @if ($history->hasMorePages())

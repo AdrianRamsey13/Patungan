@@ -3,12 +3,18 @@
 namespace App\Http\Controllers;
 
 use App\Models\ExpenseSplit;
+use Illuminate\Http\Request;
 
 class HistoryController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
         $userId = (int) auth()->id();
+
+        $perPage = (int) $request->query('per_page', 10);
+        if (!in_array($perPage, [5, 10, 20])) {
+            $perPage = 10;
+        }
 
         $history = ExpenseSplit::with([
                 'expense.event',
@@ -26,8 +32,9 @@ class HistoryController extends Controller
                   ->whereHas('expense', fn($q2) => $q2->where('paid_by', $userId));
             })
             ->orderByDesc('paid_at')
-            ->paginate(20);
+            ->paginate($perPage)
+            ->appends(['per_page' => $perPage]);
 
-        return view('history.index', compact('history'));
+        return view('history.index', compact('history', 'perPage'));
     }
 }
